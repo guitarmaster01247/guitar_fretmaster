@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>기타 트레이너 (Mobile All-in-One)</title>
+    <style>
+        :root { --fret-gold: #c5a059; --wood: #2c1e14; --string-base: #bdc3c7; --dot: #ecf0f1; --primary: #4a90e2; }
+        * { -webkit-tap-highlight-color: transparent; user-select: none; box-sizing: border-box; }
+        body { font-family: 'Pretendard', sans-serif; background: #000; margin: 0; padding: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+
+        .header { background: #fff; padding: 5px 10px; display: flex; align-items: center; justify-content: space-between; z-index: 100; gap: 5px; }
+        select { padding: 5px; border-radius: 5px; font-weight: bold; border: 1px solid var(--primary); font-size: 0.75rem; }
+        
+        .str-selector { display: flex; gap: 2px; flex-wrap: nowrap; }
+        .str-mini-btn { padding: 6px 8px; font-size: 0.7rem; border: 1px solid #ddd; border-radius: 4px; background: #eee; font-weight: bold; min-width: 32px; }
+        .str-mini-btn.active { background: #333; color: white; border-color: #333; }
+
+        .quiz-info { text-align: center; flex-grow: 1; min-width: 50px; }
+        .target-note { font-size: 1.8rem; font-weight: 900; line-height: 1; color: #2c3e50; }
+        .target-desc { font-size: 0.65rem; color: #7f8c8d; white-space: nowrap; }
+
+        .fretboard-wrapper { flex-grow: 1; overflow-x: auto; background: #1a1a1a; display: flex; align-items: center; padding: 0 10px; }
+        .fretboard { position: relative; display: flex; width: 1450px; height: 75vh; background: var(--wood); border-top: 3px solid #444; border-bottom: 3px solid #444; }
+        
+        .fret { flex: 1; border-right: 3px solid var(--fret-gold); position: relative; }
+        .fret:first-child { border-right: 8px solid #ddd; flex: 0.4; }
+        .fret-num { position: absolute; top: -20px; width: 100%; text-align: center; color: #999; font-size: 0.7rem; }
+        
+        .inlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 14px; height: 14px; background: var(--dot); border-radius: 50%; opacity: 0.4; pointer-events: none; }
+        .inlay-12-top { transform: translate(-50%, -150%); }
+        .inlay-12-bottom { transform: translate(-50%, 50%); }
+
+        .strings { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: space-around; pointer-events: none; }
+        .string { background: var(--string-base); width: 100%; box-shadow: 0 1px 1px rgba(0,0,0,0.5); }
+        /* 줄 굵기 차별화 */
+        .string-1 { height: 1px; } .string-2 { height: 1.2px; } .string-3 { height: 1.8px; }
+        .string-4 { height: 2.5px; } .string-5 { height: 3.5px; } .string-6 { height: 5px; }
+
+        .node { position: absolute; width: 46px; height: 46px; border-radius: 50%; transform: translate(-50%, -50%); z-index: 10; display: flex; align-items: center; justify-content: center; color: transparent; font-size: 1rem; font-weight: bold; }
+        .node.correct { background: #27ae60; color: white !important; }
+        .node.wrong { background: #e74c3c; color: white !important; }
+        .node.dimmed { opacity: 0.1; pointer-events: none; }
+
+        .status-bar { position: fixed; bottom: 0; width: 100%; background: rgba(0,0,0,0.9); color: #fff; padding: 5px; font-size: 0.8rem; text-align: center; }
+        @media screen and (orientation: portrait) { .portrait-warning { display: flex !important; position: fixed; top:0; left:0; width:100%; height:100%; background: #000; color: #fff; z-index: 9999; flex-direction: column; justify-content: center; align-items: center; text-align: center; } }
+        .portrait-warning { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="portrait-warning">🔄 가로로 돌려주세요!</div>
+
+<div class="header">
+    <select id="modeSelect" onchange="changeMode(this.value)">
+        <option value="ALL">전체 찾기</option>
+        <option value="RANDOM">랜덤 줄</option>
+        <option value="MASTER">한 줄 정복</option>
+    </select>
+    
+    <div class="quiz-info">
+        <div id="target-note" class="target-note">-</div>
+        <div id="target-desc" class="target-desc">-</div>
+    </div>
+
+    <div class="str-selector" id="strSelectBox" style="visibility: hidden;">
+        <button class="str-mini-btn" onclick="selectMaster(6)">6</button>
+        <button class="str-mini-btn" onclick="selectMaster(5)">5</button>
+        <button class="str-mini-btn" onclick="selectMaster(4)">4</button>
+        <button class="str-mini-btn" onclick="selectMaster(3)">3</button>
+        <button class="str-mini-btn active" onclick="selectMaster(2)">2</button>
+        <button class="str-mini-btn" onclick="selectMaster(1)">1</button>
+    </div>
+</div>
+
+<div class="fretboard-wrapper"><div class="fretboard" id="fretboard"></div></div>
+<div id="status" class="status-bar">준비...</div>
+
+<script>
+    const noteNames = ["E", "F", "F#", "G", "G#", "A", "A#", "B", "C", "C#", "D", "D#"];
+    const stringRoots = [0, 7, 3, 10, 5, 0];
+    const quizNotes = ["C", "D", "E", "F", "G", "A", "B"];
+    const inlays = [3, 5, 7, 9, 12, 15];
+
+    let currentMode = 'ALL';
+    let currentTargetNote = "";
+    let currentTargetString = 0;
+    let selectedMaster = 2;
+    let foundCount = 0;
+    let totalToFind = 0;
+
+    function init() {
+        const board = document.getElementById('fretboard');
+        board.innerHTML = "";
+        for (let f = 0; f <= 15; f++) {
+            const fretDiv = document.createElement('div');
+            fretDiv.className = 'fret';
+            fretDiv.innerHTML = `<div class="fret-num">${f===0?'N':f}</div>`;
+            if (inlays.includes(f)) {
+                if (f===12) fretDiv.innerHTML += `<div class="inlay inlay-12-top"></div><div class="inlay inlay-12-bottom"></div>`;
+                else fretDiv.innerHTML += `<div class="inlay"></div>`;
+            }
+            for (let s = 1; s <= 6; s++) {
+                const node = document.createElement('div');
+                node.className = `node node-s${s}`;
+                node.style.top = ((s - 0.5) * (100 / 6)) + "%";
+                node.style.left = (f === 0 ? "25%" : "50%");
+                const noteIdx = (stringRoots[s-1] + f) % 12;
+                const noteName = noteNames[noteIdx];
+                node.dataset.note = noteName;
+                node.dataset.string = s;
+                node.dataset.fret = f;
+                node.innerText = noteName;
+                
+                const handler = (e) => { e.preventDefault(); handle(node, noteName, s, f); };
+                node.addEventListener('touchstart', handler);
+                node.addEventListener('mousedown', () => handle(node, noteName, s, f));
+                fretDiv.appendChild(node);
+            }
+            board.appendChild(fretDiv);
+        }
+        const sDiv = document.createElement('div');
+        sDiv.className = 'strings';
+        for(let i=1; i<=6; i++) {
+            const str = document.createElement('div');
+            str.className = `string string-${i}`;
+            sDiv.appendChild(str);
+        }
+        board.appendChild(sDiv);
+    }
+
+    function handle(node, note, s, f) {
+        if (f > 12 || (currentMode === 'MASTER' && s !== selectedMaster) || node.classList.contains('correct')) return;
+        const isNote = (note === currentTargetNote);
+        const isStr = (currentMode === 'RANDOM' ? s === currentTargetString : true);
+        if (isNote && isStr) {
+            node.classList.add('correct');
+            foundCount++;
+            update();
+            if (foundCount === totalToFind) { 
+                document.getElementById('status').innerText = "🎉 미션 성공!"; 
+                setTimeout(start, 1000); 
+            }
+        } else {
+            node.classList.add('wrong');
+            document.getElementById('status').innerText = `${s}번줄 ${f}F(${note}) - 오답!`;
+            setTimeout(() => node.classList.remove('wrong'), 600);
+        }
+    }
+
+    function changeMode(m) { 
+        currentMode = m; 
+        document.getElementById('strSelectBox').style.visibility = (m==='MASTER'?'visible':'hidden');
+        start(); 
+    }
+
+    function selectMaster(s) { 
+        selectedMaster = s; 
+        const buttons = document.querySelectorAll('.str-mini-btn');
+        buttons.forEach(btn => {
+            btn.classList.toggle('active', parseInt(btn.innerText) === s);
+        });
+        start(); 
+    }
+
+    function update() { document.getElementById('status').innerText = `남은 개수: ${totalToFind - foundCount}`; }
+
+    function start() {
+        const nodes = document.querySelectorAll('.node');
+        nodes.forEach(n => {
+            n.classList.remove('correct', 'wrong');
+            if (currentMode === 'MASTER') n.classList.toggle('dimmed', parseInt(n.dataset.string) !== selectedMaster);
+            else n.classList.remove('dimmed');
+        });
+        currentTargetNote = quizNotes[Math.floor(Math.random() * quizNotes.length)];
+        document.getElementById('target-note').innerText = currentTargetNote;
+        
+        if (currentMode === 'ALL') {
+            document.getElementById('target-desc').innerText = "0-12F 전체 찾기";
+            totalToFind = Array.from(nodes).filter(n => n.dataset.note === currentTargetNote && parseInt(n.dataset.fret) <= 12).length;
+        } else if (currentMode === 'RANDOM') {
+            currentTargetString = Math.floor(Math.random() * 6) + 1;
+            document.getElementById('target-desc').innerText = `${currentTargetString}번 줄에서 찾기`;
+            totalToFind = Array.from(nodes).filter(n => n.dataset.note === currentTargetNote && parseInt(n.dataset.string) === currentTargetString && parseInt(n.dataset.fret) <= 12).length;
+        } else {
+            document.getElementById('target-desc').innerText = `${selectedMaster}번 줄 집중 훈련`;
+            totalToFind = Array.from(nodes).filter(n => n.dataset.note === currentTargetNote && parseInt(n.dataset.string) === selectedMaster && parseInt(n.dataset.fret) <= 12).length;
+        }
+        if (totalToFind === 0) return start();
+        foundCount = 0;
+        update();
+    }
+
+    init();
+    changeMode('ALL');
+</script>
+</body>
+</html>
