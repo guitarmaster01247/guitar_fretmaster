@@ -2,123 +2,63 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <!-- viewport-fit=cover: 노치 영역까지 화면을 꽉 채우되, safe-area를 사용할 수 있게 함 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>기타 트레이너 Pro (Mobile)</title>
+    <title>기타 트레이너 (Mobile All-in-One)</title>
     <style>
-        :root { 
-            --fret-gold: #c5a059; 
-            --wood: #2c1e14; 
-            --string-base: #bdc3c7; 
-            --dot: #ecf0f1; 
-            --primary: #4a90e2;
-            --vh: 1vh; 
-        }
-        * { -webkit-tap-highlight-color: transparent; user-select: none; box-shadow: border-box; }
-        
+        :root { --fret-gold: #c5a059; --wood: #2c1e14; --string-base: #bdc3c7; --dot: #ecf0f1; --primary: #4a90e2; --vh: 1vh; }
+        * { -webkit-tap-highlight-color: transparent; user-select: none; box-sizing: border-box; }
         body { 
-            font-family: 'Pretendard', sans-serif; 
-            background: #000; 
-            margin: 0; padding: 0; 
-            display: flex; flex-direction: column; 
-            height: calc(var(--vh, 1vh) * 100); 
-            overflow: hidden; 
-            /* 가로 모드에서 노치나 다이나믹 아일랜드를 피하기 위한 패딩 설정 */
-            padding-left: env(safe-area-inset-left);
-            padding-right: env(safe-area-inset-right);
+            font-family: 'Pretendard', sans-serif; background: #000; margin: 0; padding: 0; 
+            display: flex; flex-direction: column; height: calc(var(--vh, 1vh) * 100); overflow: hidden; 
+            padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); /* Safe Area 대응[cite: 1] */
         }
 
-        .header { 
-            background: #fff; 
-            padding: 5px 15px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: space-between; 
-            z-index: 100; 
-            height: 60px;
-        }
+        .header { background: #fff; padding: 5px 10px; display: flex; align-items: center; justify-content: space-between; height: 65px; z-index: 100; gap: 5px; }
+        .score-box { background: #2c3e50; color: white; padding: 4px 8px; border-radius: 8px; font-size: 0.7rem; min-width: 65px; text-align: center; }
+        .score-box b { font-size: 0.9rem; display: block; }
         
-        select { padding: 8px; border-radius: 8px; font-weight: bold; border: 2px solid var(--primary); font-size: 0.8rem; background: white; }
+        select { padding: 5px; border-radius: 5px; font-weight: bold; border: 1px solid var(--primary); font-size: 0.7rem; width: 105px; }
         
-        .str-selector { display: flex; gap: 4px; }
-        .str-mini-btn { padding: 8px 10px; font-size: 0.8rem; border: 1px solid #ddd; border-radius: 6px; background: #eee; font-weight: bold; min-width: 35px; }
-        .str-mini-btn.active { background: #333; color: white; border-color: #333; }
+        .str-selector { display: flex; gap: 2px; }
+        .str-mini-btn { padding: 6px 4px; font-size: 0.6rem; border: 1px solid #ddd; border-radius: 4px; background: #eee; font-weight: bold; min-width: 38px; }
+        .str-mini-btn.selected { background: #e67e22; color: white; border-color: #e67e22; }
 
         .quiz-info { text-align: center; flex-grow: 1; }
-        .target-note { font-size: 2rem; font-weight: 900; line-height: 1; color: #2c3e50; }
-        .target-desc { font-size: 0.7rem; color: #7f8c8d; }
+        .target-note { font-size: 1.6rem; font-weight: 900; color: #2c3e50; line-height: 1; }
+        .target-desc { font-size: 0.6rem; color: #7f8c8d; }
 
-        .fretboard-wrapper { 
-            flex-grow: 1; 
-            overflow-x: auto; 
-            background: #1a1a1a; 
-            display: flex; 
-            align-items: center; 
-            padding: 0 20px;
-            /* 하단 홈 바(Indicator) 영역 확보 */
-            padding-bottom: env(safe-area-inset-bottom); 
-        }
+        .fretboard-wrapper { flex-grow: 1; overflow-x: auto; background: #1a1a1a; display: flex; align-items: center; padding: 0 10px; padding-bottom: env(safe-area-inset-bottom); }
+        .fretboard { position: relative; display: flex; width: 1450px; height: 75%; max-height: 250px; background: var(--wood); border-top: 3px solid #444; border-bottom: 3px solid #444; }
         
-        .fretboard { 
-            position: relative; 
-            display: flex; 
-            width: 1550px; /* 지판을 조금 더 길게 빼서 터치 여유 확보 */
-            height: 70%; 
-            max-height: 280px;
-            background: var(--wood); 
-            border-top: 4px solid #444; 
-            border-bottom: 4px solid #444; 
-        }
-        
-        /* ... (기타 fret, inlay, string 스타일은 이전과 동일) ... */
         .fret { flex: 1; border-right: 3px solid var(--fret-gold); position: relative; }
-        .fret:first-child { border-right: 10px solid #ddd; flex: 0.5; }
-        .fret-num { position: absolute; top: -25px; width: 100%; text-align: center; color: #999; font-size: 0.8rem; font-weight: bold; }
-        .inlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 16px; height: 16px; background: var(--dot); border-radius: 50%; opacity: 0.4; pointer-events: none; }
-        .inlay-12-top { transform: translate(-50%, -150%); }
-        .inlay-12-bottom { transform: translate(-50%, 50%); }
+        .fret:first-child { border-right: 8px solid #ddd; flex: 0.4; }
+        .fret-num { position: absolute; top: -20px; width: 100%; text-align: center; color: #999; font-size: 0.7rem; }
+
         .strings { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: space-around; pointer-events: none; }
-        .string { background: var(--string-base); width: 100%; box-shadow: 0 1px 1px rgba(0,0,0,0.5); }
-        .string-1 { height: 1px; } .string-2 { height: 1.2px; } .string-3 { height: 1.8px; }
-        .string-4 { height: 2.8px; } .string-5 { height: 3.8px; } .string-6 { height: 5.5px; }
+        .string { background: var(--string-base); width: 100%; }
 
-        .node { position: absolute; width: 48px; height: 48px; border-radius: 50%; transform: translate(-50%, -50%); z-index: 10; display: flex; align-items: center; justify-content: center; color: transparent; font-size: 1.1rem; font-weight: bold; }
-        .node.correct { background: #27ae60; color: white !important; box-shadow: 0 0 12px #27ae60; }
+        .node { position: absolute; width: 44px; height: 44px; border-radius: 50%; transform: translate(-50%, -50%); z-index: 10; display: flex; align-items: center; justify-content: center; color: transparent; font-size: 0.9rem; font-weight: bold; }
+        .node.correct { background: #27ae60; color: white !important; }
         .node.wrong { background: #e74c3c; color: white !important; }
-        .node.dimmed { opacity: 0.08; pointer-events: none; }
+        .node.dimmed { opacity: 0.05; pointer-events: none; }
 
-        .status-bar { 
-            position: fixed; 
-            bottom: 0; 
-            width: 100%; 
-            background: rgba(0,0,0,0.95); 
-            color: #fff; 
-            padding: 5px; 
-            padding-bottom: max(5px, env(safe-area-inset-bottom)); /* 홈 바가 있는 폰 대응 */
-            font-size: 0.85rem; 
-            text-align: center; 
-            height: auto;
-        }
+        .status-bar { position: fixed; bottom: 0; width: 100%; background: rgba(0,0,0,0.9); color: #fff; padding: 5px; font-size: 0.8rem; text-align: center; padding-bottom: max(5px, env(safe-area-inset-bottom)); }
         
-        @media screen and (orientation: portrait) { 
-            .portrait-warning { display: flex !important; position: fixed; top:0; left:0; width:100%; height:100%; background: #111; color: #fff; z-index: 9999; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 30px; } 
-        }
+        @media screen and (orientation: portrait) { .portrait-warning { display: flex !important; position: fixed; top:0; left:0; width:100%; height:100%; background: #000; color: #fff; z-index: 9999; flex-direction: column; justify-content: center; align-items: center; } }
         .portrait-warning { display: none; }
     </style>
 </head>
 <body>
 
-<div class="portrait-warning">
-    <div style="font-size: 4rem; margin-bottom: 15px;">🎸</div>
-    <h2>화면을 가로로 돌려주세요</h2>
-    <p>다이나믹 아일랜드와 노치 영역을 피해서<br>최적화된 화면을 구성합니다.</p>
-</div>
+<div class="portrait-warning">🔄 가로로 돌려주세요!</div>
 
 <div class="header">
+    <div class="score-box"><span id="combo">0</span> CBO<b id="score">0</b></div>
+    
     <select id="modeSelect" onchange="changeMode(this.value)">
-        <option value="ALL">전체 찾기</option>
-        <option value="RANDOM">랜덤 줄</option>
-        <option value="MASTER">한 줄 정복</option>
+        <option value="ALL">한 음 싹 찾기</option>
+        <option value="SINGLE">한 줄 랜덤</option>
+        <option value="MULTI">다중 줄 랜덤</option>
     </select>
     
     <div class="quiz-info">
@@ -127,40 +67,32 @@
     </div>
 
     <div class="str-selector" id="strSelectBox" style="visibility: hidden;">
-        <button class="str-mini-btn" onclick="selectMaster(6)">6</button>
-        <button class="str-mini-btn" onclick="selectMaster(5)">5</button>
-        <button class="str-mini-btn" onclick="selectMaster(4)">4</button>
-        <button class="str-mini-btn" onclick="selectMaster(3)">3</button>
-        <button class="str-mini-btn active" onclick="selectMaster(2)">2</button>
-        <button class="str-mini-btn" onclick="selectMaster(1)">1</button>
+        <button class="str-mini-btn" data-s="6" onclick="handleStringSelect(6)">6번</button>
+        <button class="str-mini-btn" data-s="5" onclick="handleStringSelect(5)">5번</button>
+        <button class="str-mini-btn" data-s="4" onclick="handleStringSelect(4)">4번</button>
+        <button class="str-mini-btn" data-s="3" onclick="handleStringSelect(3)">3번</button>
+        <button class="str-mini-btn selected" data-s="2" onclick="handleStringSelect(2)">2번</button>
+        <button class="str-mini-btn" data-s="1" onclick="handleStringSelect(1)">1번</button>
     </div>
 </div>
 
-<div class="fretboard-wrapper">
-    <div class="fretboard" id="fretboard"></div>
-</div>
-
-<div id="status" class="status-bar">준비 완료!</div>
+<div class="fretboard-wrapper"><div class="fretboard" id="fretboard"></div></div>
+<div id="status" class="status-bar">준비...</div>
 
 <script>
-    function setScreenSize() {
-        let vh = window.innerHeight * 0.01;
-        document.documentElement.style.setProperty('--vh', `${vh}px`);
-    }
-    setScreenSize();
-    window.addEventListener('resize', setScreenSize);
+    function setScreenSize() { document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`); }
+    setScreenSize(); window.addEventListener('resize', setScreenSize);
 
     const noteNames = ["E", "F", "F#", "G", "G#", "A", "A#", "B", "C", "C#", "D", "D#"];
     const stringRoots = [0, 7, 3, 10, 5, 0];
     const quizNotes = ["C", "D", "E", "F", "G", "A", "B"];
-    const inlays = [3, 5, 7, 9, 12, 15];
 
     let currentMode = 'ALL';
+    let selectedStrings = [2];
     let currentTargetNote = "";
     let currentTargetString = 0;
-    let selectedMaster = 2;
-    let foundCount = 0;
-    let totalToFind = 0;
+    let score = 0; let combo = 0;
+    let foundCount = 0; let totalToFind = 0;
 
     function init() {
         const board = document.getElementById('fretboard');
@@ -169,23 +101,16 @@
             const fretDiv = document.createElement('div');
             fretDiv.className = 'fret';
             fretDiv.innerHTML = `<div class="fret-num">${f===0?'N':f}</div>`;
-            if (inlays.includes(f)) {
-                if (f===12) fretDiv.innerHTML += `<div class="inlay inlay-12-top"></div><div class="inlay inlay-12-bottom"></div>`;
-                else fretDiv.innerHTML += `<div class="inlay"></div>`;
-            }
             for (let s = 1; s <= 6; s++) {
                 const node = document.createElement('div');
                 node.className = `node node-s${s}`;
-                node.style.top = ((s - 0.5) * (100 / 6)) + "%";
-                node.style.left = (f === 0 ? "25%" : "50%");
-                const noteIdx = (stringRoots[s-1] + f) % 12;
+                node.style.top = ((s-0.5)*(100/6))+"%"; node.style.left = (f===0?"25%":"50%");
+                const noteIdx = (stringRoots[s-1]+f)%12;
                 const noteName = noteNames[noteIdx];
-                node.dataset.note = noteName;
-                node.dataset.string = s;
-                node.dataset.fret = f;
+                node.dataset.note = noteName; node.dataset.string = s; node.dataset.fret = f;
                 node.innerText = noteName;
                 
-                const handler = (e) => { e.preventDefault(); handle(node, noteName, s, f); };
+                const handler = (e)=>{ e.preventDefault(); handle(node, noteName, s, f); };
                 node.addEventListener('touchstart', handler);
                 node.addEventListener('mousedown', () => handle(node, noteName, s, f));
                 fretDiv.appendChild(node);
@@ -197,74 +122,79 @@
         for(let i=1; i<=6; i++) {
             const str = document.createElement('div');
             str.className = `string string-${i}`;
+            str.style.height = (i * 0.8) + "px"; // 줄별 굵기 차별화[cite: 1, 2]
             sDiv.appendChild(str);
         }
         board.appendChild(sDiv);
     }
 
     function handle(node, note, s, f) {
-        if (f > 12 || (currentMode === 'MASTER' && s !== selectedMaster) || node.classList.contains('correct')) return;
+        if (f > 12) return;
+        if (node.classList.contains('correct')) return;
+
         const isNote = (note === currentTargetNote);
-        const isStr = (currentMode === 'RANDOM' ? s === currentTargetString : true);
+        let isStr = true;
+        if (currentMode !== 'ALL') isStr = (s === currentTargetString);
+
         if (isNote && isStr) {
             node.classList.add('correct');
-            foundCount++;
-            updateStatus();
-            if (foundCount === totalToFind) { 
-                document.getElementById('status').innerText = "🎉 미션 성공!"; 
-                setTimeout(startNewQuiz, 1000); 
-            }
+            foundCount++; combo++; score += 10 + (combo*2); // 연속 콤보[cite: 1]
+            update();
+            if (foundCount === totalToFind) { document.getElementById('status').innerText = "🎉 미션 성공!"; setTimeout(start, 1000); }
         } else {
-            node.classList.add('wrong');
-            document.getElementById('status').innerText = `${s}번줄 ${f}F(${note}) 선택 - 오답!`;
+            node.classList.add('wrong'); combo = 0; update(); // 틀리면 콤보 초기화[cite: 1]
+            document.getElementById('status').innerText = `${s}번 줄 오답!`; // 명칭 수정[cite: 1]
             setTimeout(() => node.classList.remove('wrong'), 600);
         }
     }
 
+    function handleStringSelect(s) {
+        if (currentMode === 'SINGLE') selectedStrings = [s];
+        else {
+            if (selectedStrings.includes(s)) { if(selectedStrings.length > 1) selectedStrings = selectedStrings.filter(v=>v!==s); }
+            else selectedStrings.push(s);
+        }
+        document.querySelectorAll('.str-mini-btn').forEach(b => b.classList.toggle('selected', selectedStrings.includes(parseInt(b.dataset.s))));
+        start();
+    }
+
     function changeMode(m) { 
         currentMode = m; 
-        document.getElementById('strSelectBox').style.visibility = (m==='MASTER'?'visible':'hidden');
-        startNewQuiz(); 
+        if (m === 'SINGLE') selectedStrings = [selectedStrings[0] || 2];
+        document.getElementById('strSelectBox').style.visibility = (m==='ALL'?'hidden':'visible');
+        document.querySelectorAll('.str-mini-btn').forEach(b => b.classList.toggle('selected', selectedStrings.includes(parseInt(b.dataset.s))));
+        start(); 
     }
 
-    function selectMaster(s) { 
-        selectedMaster = s; 
-        document.querySelectorAll('.str-mini-btn').forEach(btn => {
-            btn.classList.toggle('active', parseInt(btn.innerText) === s);
-        });
-        startNewQuiz(); 
+    function update() {
+        document.getElementById('score').innerText = score;
+        document.getElementById('combo').innerText = combo;
+        document.getElementById('status').innerText = `남음: ${totalToFind - foundCount}`;
     }
 
-    function updateStatus() { document.getElementById('status').innerText = `남은 개수: ${totalToFind - foundCount}`; }
-
-    function startNewQuiz() {
-        const nodes = document.querySelectorAll('.node');
-        nodes.forEach(n => {
-            n.classList.remove('correct', 'wrong');
-            if (currentMode === 'MASTER') n.classList.toggle('dimmed', parseInt(n.dataset.string) !== selectedMaster);
-            else n.classList.remove('dimmed');
-        });
+    function start() {
+        document.querySelectorAll('.node').forEach(n => n.classList.remove('correct', 'wrong', 'dimmed'));
         currentTargetNote = quizNotes[Math.floor(Math.random() * quizNotes.length)];
-        document.getElementById('target-note').innerText = currentTargetNote;
         
+        const nodesArr = Array.from(document.querySelectorAll('.node'));
         if (currentMode === 'ALL') {
-            document.getElementById('target-desc').innerText = "0-12F 전체 찾기";
-            totalToFind = Array.from(nodes).filter(n => n.dataset.note === currentTargetNote && parseInt(n.dataset.fret) <= 12).length;
-        } else if (currentMode === 'RANDOM') {
-            currentTargetString = Math.floor(Math.random() * 6) + 1;
-            document.getElementById('target-desc').innerText = `${currentTargetString}번 줄에서 찾기`;
-            totalToFind = Array.from(nodes).filter(n => n.dataset.note === currentTargetNote && parseInt(n.dataset.string) === currentTargetString && parseInt(n.dataset.fret) <= 12).length;
+            document.getElementById('target-desc').innerText = "지판 전체 찾기";
+            totalToFind = nodesArr.filter(n => n.dataset.note === currentTargetNote && parseInt(n.dataset.fret) <= 12).length;
         } else {
-            document.getElementById('target-desc').innerText = `${selectedMaster}번 줄 집중 훈련`;
-            totalToFind = Array.from(nodes).filter(n => n.dataset.note === currentTargetNote && parseInt(n.dataset.string) === selectedMaster && parseInt(n.dataset.fret) <= 12).length;
+            currentTargetString = selectedStrings[Math.floor(Math.random() * selectedStrings.length)];
+            document.getElementById('target-desc').innerText = `${currentTargetString}번 줄에서 찾기`; // 명칭 수정[cite: 1]
+            document.querySelectorAll('.node').forEach(n => {
+                if (parseInt(n.dataset.string) !== currentTargetString) n.classList.add('dimmed');
+            });
+            totalToFind = nodesArr.filter(n => n.dataset.note === currentTargetNote && parseInt(n.dataset.string) === currentTargetString && parseInt(n.dataset.fret) <= 12).length;
         }
-        if (totalToFind === 0) return startNewQuiz();
-        foundCount = 0;
-        updateStatus();
+        if (totalToFind === 0) return start();
+        foundCount = 0; 
+        document.getElementById('target-note').innerText = currentTargetNote;
+        update();
     }
 
-    init();
-    changeMode('ALL');
+    init(); start();
 </script>
 </body>
 </html>

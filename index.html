@@ -2,39 +2,38 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>기타 지판 트레이너 Pro (통합본)</title>
+    <title>기타 지판 트레이너 Pro (통합 최종본)</title>
     <style>
         :root { --fret-gold: #c5a059; --wood: #2c1e14; --string-base: #bdc3c7; --dot: #ecf0f1; --primary: #4a90e2; }
         body { font-family: 'Pretendard', sans-serif; background: #f0f2f5; display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .card { background: white; padding: 2rem; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 95%; max-width: 1400px; text-align: center; }
+        .card { background: white; padding: 2rem; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 95%; max-width: 1400px; text-align: center; position: relative; }
         
-        .main-nav { display: flex; flex-direction: column; gap: 15px; margin-bottom: 30px; border-bottom: 2px solid #eee; padding-bottom: 20px; }
+        /* 점수판[cite: 1] */
+        .score-board { position: absolute; top: 20px; right: 30px; text-align: right; background: #2c3e50; color: white; padding: 10px 20px; border-radius: 15px; }
+        .score-val { font-size: 1.5rem; font-weight: bold; }
+        .combo-val { font-size: 1rem; color: #f1c40f; }
+
+        .main-nav { display: flex; flex-direction: column; gap: 15px; margin-bottom: 30px; border-bottom: 2px solid #eee; padding-bottom: 20px; margin-top: 20px; }
         .mode-selector, .string-selector { display: flex; justify-content: center; gap: 10px; }
         
         .btn { padding: 10px 20px; border: 2px solid var(--primary); border-radius: 30px; background: white; color: var(--primary); font-weight: bold; cursor: pointer; transition: 0.3s; }
         .btn.active { background: var(--primary); color: white; }
         .str-btn { border-color: #ddd; color: #666; font-size: 0.9rem; }
-        .str-btn.active { border-color: #2c3e50; background: #2c3e50; color: white; }
+        .str-btn.selected { border-color: #e67e22; background: #e67e22; color: white; }
 
-        .quiz-header { min-height: 120px; margin-bottom: 20px; }
+        .quiz-header { min-height: 120px; }
         .target-note { font-size: 3.5rem; font-weight: 800; color: #2c3e50; margin: 5px 0; }
         .target-desc { color: #7f8c8d; font-size: 1.1rem; font-weight: bold; }
 
         .fretboard-container { width: 100%; overflow-x: auto; padding: 40px 0; background: #1a1a1a; border-radius: 10px; margin: 20px 0; }
         .fretboard { position: relative; display: flex; width: 1450px; height: 220px; background: var(--wood); border-top: 4px solid #444; border-bottom: 4px solid #444; margin: 0 auto; }
         
-        .fret { flex: 1; border-right: 4px solid var(--fret-gold); position: relative; cursor: pointer; }
+        .fret { flex: 1; border-right: 4px solid var(--fret-gold); position: relative; }
         .fret:first-child { border-right: 12px solid #ddd; flex: 0.4; }
         .fret-num { position: absolute; bottom: -35px; width: 100%; text-align: center; color: #999; font-size: 0.9rem; font-weight: bold; }
 
-        .inlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 16px; height: 16px; background: var(--dot); border-radius: 50%; opacity: 0.6; pointer-events: none; }
-        .inlay-12-top { transform: translate(-50%, -150%); }
-        .inlay-12-bottom { transform: translate(-50%, 50%); }
-
         .strings { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: space-around; pointer-events: none; }
         .string { background: var(--string-base); width: 100%; box-shadow: 0 1px 2px rgba(0,0,0,0.6); }
-        .string-1 { height: 1.0px; } .string-2 { height: 1.5px; } .string-3 { height: 2.0px; }
-        .string-4 { height: 3.0px; } .string-5 { height: 4.0px; } .string-6 { height: 5.5px; }
 
         .node { position: absolute; width: 38px; height: 38px; border-radius: 50%; transform: translate(-50%, -50%); cursor: pointer; z-index: 10; display: flex; align-items: center; justify-content: center; transition: 0.1s; color: transparent; font-weight: bold; }
         .node.correct { background: #27ae60; color: white !important; box-shadow: 0 0 15px #27ae60; }
@@ -42,30 +41,34 @@
         .node.dimmed { opacity: 0.15; pointer-events: none; }
 
         .status { height: 50px; margin-top: 10px; font-weight: bold; font-size: 1.3rem; }
-        .mobile-link { margin-top: 20px; font-size: 0.9rem; }
     </style>
 </head>
 <body>
 
 <div class="card">
+    <div class="score-board">
+        <div class="score-val">Score: <span id="score">0</span></div>
+        <div class="combo-val"><span id="combo">0</span> COMBO</div>
+    </div>
+
     <div class="main-nav">
         <div class="mode-selector">
-            <button id="mode-ALL" class="btn active" onclick="changeMode('ALL')">한 음 싹 다 찾기</button>
-            <button id="mode-RANDOM" class="btn" onclick="changeMode('RANDOM')">랜덤 줄 지정 퀴즈</button>
-            <button id="mode-MASTER" class="btn" onclick="changeMode('MASTER')">한 줄 마스터 모드</button>
+            <button id="mode-ALL" class="btn active" onclick="changeMode('ALL')">한 음 싹 다 찾기 (전체)</button>
+            <button id="mode-SINGLE" class="btn" onclick="changeMode('SINGLE')">한 줄 랜덤 퀴즈</button>
+            <button id="mode-MULTI" class="btn" onclick="changeMode('MULTI')">다중 줄 랜덤 퀴즈</button>
         </div>
-        <div class="string-selector" id="str-nav" style="display:none;">
-            <button class="btn str-btn" onclick="selectMasterString(6)">6줄(E)</button>
-            <button class="btn str-btn" onclick="selectMasterString(5)">5줄(A)</button>
-            <button class="btn str-btn" onclick="selectMasterString(4)">4줄(D)</button>
-            <button class="btn str-btn" onclick="selectMasterString(3)">3줄(G)</button>
-            <button class="btn str-btn active" onclick="selectMasterString(2)">2줄(B)</button>
-            <button class="btn str-btn" onclick="selectMasterString(1)">1줄(E)</button>
+        <div class="string-selector" id="str-nav" style="display:none; margin-top:10px;">
+            <button class="btn str-btn" data-s="6" onclick="handleStringSelect(6)">6번 줄</button>
+            <button class="btn str-btn" data-s="5" onclick="handleStringSelect(5)">5번 줄</button>
+            <button class="btn str-btn" data-s="4" onclick="handleStringSelect(4)">4번 줄</button>
+            <button class="btn str-btn" data-s="3" onclick="handleStringSelect(3)">3번 줄</button>
+            <button class="btn str-btn selected" data-s="2" onclick="handleStringSelect(2)">2번 줄</button>
+            <button class="btn str-btn" data-s="1" onclick="handleStringSelect(1)">1번 줄</button>
         </div>
     </div>
 
     <div class="quiz-header">
-        <div id="target-desc" class="target-desc">지판의 모든 음을 찾으세요</div>
+        <div id="target-desc" class="target-desc">지판에서 다음 음을 찾으세요</div>
         <div id="target-note" class="target-note">-</div>
         <div id="status" class="status"></div>
     </div>
@@ -73,22 +76,21 @@
     <div class="fretboard-container">
         <div class="fretboard" id="fretboard"></div>
     </div>
-    
-    <div class="mobile-link"><a href="mobile.html">📱 모바일 버전으로 전환하기</a></div>
 </div>
 
 <script>
     const noteNames = ["E", "F", "F#", "G", "G#", "A", "A#", "B", "C", "C#", "D", "D#"];
     const stringRoots = [0, 7, 3, 10, 5, 0]; 
     const quizNotes = ["C", "D", "E", "F", "G", "A", "B"];
-    const inlays = [3, 5, 7, 9, 12, 15];
-
+    
     let currentMode = 'ALL'; 
+    let selectedStrings = [2]; 
     let currentTargetNote = "";
     let currentTargetString = 0; 
-    let selectedMasterString = 2;
     let foundCount = 0;
     let totalToFind = 0;
+    let score = 0;
+    let combo = 0;
 
     function initFretboard() {
         const board = document.getElementById('fretboard');
@@ -97,10 +99,6 @@
             const fretDiv = document.createElement('div');
             fretDiv.className = 'fret';
             fretDiv.innerHTML = `<div class="fret-num">${f === 0 ? 'NUT' : f}</div>`;
-            if (inlays.includes(f)) {
-                if (f === 12) fretDiv.innerHTML += `<div class="inlay inlay-12-top"></div><div class="inlay inlay-12-bottom"></div>`;
-                else fretDiv.innerHTML += `<div class="inlay"></div>`;
-            }
             for (let s = 1; s <= 6; s++) {
                 const node = document.createElement('div');
                 node.className = `node node-s${s}`;
@@ -122,6 +120,7 @@
         for(let i=1; i<=6; i++) {
             const str = document.createElement('div');
             str.className = `string string-${i}`;
+            str.style.height = (0.5 + i * 0.8) + "px"; // 줄별 굵기 차별화[cite: 1, 2]
             sDiv.appendChild(str);
         }
         board.appendChild(sDiv);
@@ -129,80 +128,97 @@
 
     function handleNodeClick(node, noteName, string, fret) {
         if (fret > 12) return;
-        if (currentMode === 'MASTER' && string !== selectedMasterString) return;
+        if (node.classList.contains('correct')) return;
 
         const isCorrectNote = (noteName === currentTargetNote);
-        const isCorrectString = (currentMode === 'RANDOM' ? string === currentTargetString : true);
+        let isCorrectString = true;
+        if (currentMode !== 'ALL') {
+            isCorrectString = (string === currentTargetString);
+        }
 
         if (isCorrectNote && isCorrectString) {
-            if (!node.classList.contains('correct')) {
-                node.classList.add('correct');
-                foundCount++;
-                updateStatus();
-                if (foundCount === totalToFind) {
-                    document.getElementById('status').innerText = "🎉 미션 성공!";
-                    document.getElementById('status').style.color = "#27ae60";
-                    setTimeout(startNewQuiz, 1500);
-                }
+            node.classList.add('correct');
+            foundCount++;
+            combo++; // 연속 콤보[cite: 1]
+            score += 10 + (combo * 2); // 점수 시스템[cite: 1]
+            updateUI();
+            if (foundCount === totalToFind) {
+                document.getElementById('status').innerText = "🎉 성공!";
+                setTimeout(startNewQuiz, 1000);
             }
         } else {
             node.classList.add('wrong');
-            document.getElementById('status').innerHTML = `<span style="color:#e74c3c">${string}번줄 ${fret}F(${noteName}) 선택 - 오답!</span>`;
+            combo = 0; // 틀리면 콤보 초기화[cite: 1]
+            updateUI();
+            document.getElementById('status').innerHTML = `<span style="color:#e74c3c">${string}번 줄 ${fret}F 오답!</span>`; // 명칭 수정[cite: 1]
             setTimeout(() => node.classList.remove('wrong'), 800);
         }
     }
 
+    function handleStringSelect(s) {
+        if (currentMode === 'SINGLE') {
+            selectedStrings = [s];
+        } else if (currentMode === 'MULTI') {
+            if (selectedStrings.includes(s)) {
+                if (selectedStrings.length > 1) selectedStrings = selectedStrings.filter(v => v !== s);
+            } else {
+                selectedStrings.push(s);
+            }
+        }
+        updateStringButtons();
+        startNewQuiz();
+    }
+
+    function updateStringButtons() {
+        document.querySelectorAll('.str-btn').forEach(btn => {
+            btn.classList.toggle('selected', selectedStrings.includes(parseInt(btn.dataset.s)));
+        });
+    }
+
     function changeMode(mode) {
         currentMode = mode;
+        if (mode === 'SINGLE') selectedStrings = [selectedStrings[0] || 2];
         document.querySelectorAll('.mode-selector .btn').forEach(b => b.classList.toggle('active', b.id === `mode-${mode}`));
-        document.getElementById('str-nav').style.display = (mode === 'MASTER' ? 'flex' : 'none');
+        document.getElementById('str-nav').style.display = (mode === 'ALL' ? 'none' : 'flex');
+        updateStringButtons();
         startNewQuiz();
     }
 
-    function selectMasterString(s) {
-        selectedMasterString = s;
-        document.querySelectorAll('.str-btn').forEach((btn, idx) => btn.classList.toggle('active', (6 - idx) === s));
-        startNewQuiz();
-    }
-
-    function updateStatus() {
-        document.getElementById('status').innerText = `진행도: ${foundCount} / ${totalToFind}`;
-        document.getElementById('status').style.color = "#2c3e50";
+    function updateUI() {
+        document.getElementById('score').innerText = score;
+        document.getElementById('combo').innerText = combo;
+        document.getElementById('status').innerText = `남은 위치: ${totalToFind - foundCount}`;
     }
 
     function startNewQuiz() {
-        const nodes = document.querySelectorAll('.node');
-        nodes.forEach(n => {
-            n.classList.remove('correct', 'wrong');
-            if (currentMode === 'MASTER') {
-                n.classList.toggle('dimmed', parseInt(n.dataset.string) !== selectedMasterString);
-            } else {
-                n.classList.remove('dimmed');
-            }
-        });
-
+        document.querySelectorAll('.node').forEach(n => n.classList.remove('correct', 'wrong', 'dimmed'));
+        
         currentTargetNote = quizNotes[Math.floor(Math.random() * quizNotes.length)];
-        document.getElementById('target-note').innerText = currentTargetNote;
+        const allNodes = Array.from(document.querySelectorAll('.node'));
 
         if (currentMode === 'ALL') {
-            document.getElementById('target-desc').innerText = "지판 전체(0-12F)에서 다음 음을 모두 찾으세요";
-            totalToFind = Array.from(nodes).filter(n => n.dataset.note === currentTargetNote && parseInt(n.dataset.fret) <= 12).length;
-        } else if (currentMode === 'RANDOM') {
-            currentTargetString = Math.floor(Math.random() * 6) + 1;
-            document.getElementById('target-desc').innerText = `${currentTargetString}번 줄에서 다음 음을 모두 찾으세요`;
-            totalToFind = Array.from(nodes).filter(n => n.dataset.note === currentTargetNote && parseInt(n.dataset.string) === currentTargetString && parseInt(n.dataset.fret) <= 12).length;
+            document.getElementById('target-desc').innerText = "지판 전체(0-12F)에서 해당 음을 모두 찾으세요";
+            totalToFind = allNodes.filter(n => n.dataset.note === currentTargetNote && parseInt(n.dataset.fret) <= 12).length;
         } else {
-            document.getElementById('target-desc').innerText = `${selectedMasterString}번 줄에서 다음 음을 모두 찾으세요`;
-            totalToFind = Array.from(nodes).filter(n => n.dataset.note === currentTargetNote && parseInt(n.dataset.string) === selectedMasterString && parseInt(n.dataset.fret) <= 12).length;
+            // 선택된 줄들 중 랜덤하게 하나를 뽑아 문제 출제[cite: 1]
+            currentTargetString = selectedStrings[Math.floor(Math.random() * selectedStrings.length)];
+            document.getElementById('target-desc').innerText = `${currentTargetString}번 줄에서 음을 찾으세요`; // 명칭 수정[cite: 1]
+            
+            document.querySelectorAll('.node').forEach(n => {
+                if (parseInt(n.dataset.string) !== currentTargetString) n.classList.add('dimmed');
+            });
+            
+            totalToFind = allNodes.filter(n => n.dataset.note === currentTargetNote && parseInt(n.dataset.string) === currentTargetString && parseInt(n.dataset.fret) <= 12).length;
         }
         
         if (totalToFind === 0) return startNewQuiz();
         foundCount = 0;
-        updateStatus();
+        document.getElementById('target-note').innerText = currentTargetNote;
+        updateUI();
     }
 
     initFretboard();
-    changeMode('ALL');
+    startNewQuiz();
 </script>
 </body>
 </html>
