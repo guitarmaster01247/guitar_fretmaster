@@ -2,7 +2,6 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <!-- viewport-fit=cover: 노치 영역까지 화면을 꽉 채우되, safe-area를 사용할 수 있게 함 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>기타 트레이너 Pro (Mobile)</title>
     <style>
@@ -10,11 +9,11 @@
             --fret-gold: #c5a059; 
             --wood: #2c1e14; 
             --string-base: #bdc3c7; 
-            --dot: #ecf0f1; 
+            --dot: #ffffff; 
             --primary: #4a90e2;
             --vh: 1vh; 
         }
-        * { -webkit-tap-highlight-color: transparent; user-select: none; box-shadow: border-box; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
         
         body { 
             font-family: 'Pretendard', sans-serif; 
@@ -23,82 +22,39 @@
             display: flex; flex-direction: column; 
             height: calc(var(--vh, 1vh) * 100); 
             overflow: hidden; 
-            /* 가로 모드에서 노치나 다이나믹 아일랜드를 피하기 위한 패딩 설정 */
             padding-left: env(safe-area-inset-left);
             padding-right: env(safe-area-inset-right);
         }
 
-        .header { 
-            background: #fff; 
-            padding: 5px 15px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: space-between; 
-            z-index: 100; 
-            height: 60px;
-        }
-        
-        select { padding: 8px; border-radius: 8px; font-weight: bold; border: 2px solid var(--primary); font-size: 0.8rem; background: white; }
-        
-        .str-selector { display: flex; gap: 4px; }
-        .str-mini-btn { padding: 8px 10px; font-size: 0.8rem; border: 1px solid #ddd; border-radius: 6px; background: #eee; font-weight: bold; min-width: 35px; }
-        .str-mini-btn.active { background: #333; color: white; border-color: #333; }
-
+        .header { background: #fff; padding: 5px 15px; display: flex; align-items: center; justify-content: space-between; height: 70px; z-index: 100; }
+        select { padding: 8px; border-radius: 8px; border: 2px solid var(--primary); font-size: 0.8rem; background: white; }
         .quiz-info { text-align: center; flex-grow: 1; }
-        .target-note { font-size: 2rem; font-weight: 900; line-height: 1; color: #2c3e50; }
+        .target-note { font-size: 2.2rem; font-weight: 900; color: #2c3e50; line-height: 1; }
         .target-desc { font-size: 0.7rem; color: #7f8c8d; }
 
-        .fretboard-wrapper { 
-            flex-grow: 1; 
-            overflow-x: auto; 
-            background: #1a1a1a; 
-            display: flex; 
-            align-items: center; 
-            padding: 0 20px;
-            /* 하단 홈 바(Indicator) 영역 확보 */
-            padding-bottom: env(safe-area-inset-bottom); 
-        }
+        .fretboard-wrapper { flex-grow: 1; overflow-x: auto; background: #1a1a1a; display: flex; align-items: center; padding-bottom: env(safe-area-inset-bottom); }
+        .fretboard { position: relative; display: flex; width: 1550px; height: 80%; max-height: 300px; background: var(--wood); border-top: 4px solid #444; border-bottom: 4px solid #444; }
         
-        .fretboard { 
-            position: relative; 
-            display: flex; 
-            width: 1550px; /* 지판을 조금 더 길게 빼서 터치 여유 확보 */
-            height: 70%; 
-            max-height: 280px;
-            background: var(--wood); 
-            border-top: 4px solid #444; 
-            border-bottom: 4px solid #444; 
-        }
-        
-        /* ... (기타 fret, inlay, string 스타일은 이전과 동일) ... */
-        .fret { flex: 1; border-right: 3px solid var(--fret-gold); position: relative; }
+        .fret { flex: 1; border-right: 3px solid var(--fret-gold); position: relative; z-index: 1; }
         .fret:first-child { border-right: 10px solid #ddd; flex: 0.5; }
         .fret-num { position: absolute; top: -25px; width: 100%; text-align: center; color: #999; font-size: 0.8rem; font-weight: bold; }
-        .inlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 16px; height: 16px; background: var(--dot); border-radius: 50%; opacity: 0.4; pointer-events: none; }
-        .inlay-12-top { transform: translate(-50%, -150%); }
-        .inlay-12-bottom { transform: translate(-50%, 50%); }
-        .strings { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: space-around; pointer-events: none; }
+
+        /* 인레이 강화 */
+        .inlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 16px; height: 16px; background: var(--dot); border-radius: 50%; opacity: 0.7; z-index: 2; pointer-events: none; }
+        .inlay-12-top { transform: translate(-50%, -160%); }
+        .inlay-12-bottom { transform: translate(-50%, 60%); }
+
+        .strings { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: space-around; pointer-events: none; z-index: 3; }
         .string { background: var(--string-base); width: 100%; box-shadow: 0 1px 1px rgba(0,0,0,0.5); }
         .string-1 { height: 1px; } .string-2 { height: 1.2px; } .string-3 { height: 1.8px; }
         .string-4 { height: 2.8px; } .string-5 { height: 3.8px; } .string-6 { height: 5.5px; }
 
-        .node { position: absolute; width: 48px; height: 48px; border-radius: 50%; transform: translate(-50%, -50%); z-index: 10; display: flex; align-items: center; justify-content: center; color: transparent; font-size: 1.1rem; font-weight: bold; }
-        .node.correct { background: #27ae60; color: white !important; box-shadow: 0 0 12px #27ae60; }
+        .node { position: absolute; width: 44px; height: 44px; border-radius: 50%; transform: translate(-50%, -50%); z-index: 10; display: flex; align-items: center; justify-content: center; color: transparent; font-size: 1.1rem; font-weight: bold; }
+        .node.correct { background: #27ae60; color: white !important; }
         .node.wrong { background: #e74c3c; color: white !important; }
-        .node.dimmed { opacity: 0.08; pointer-events: none; }
+        .node.dimmed { opacity: 0.1; pointer-events: none; }
 
-        .status-bar { 
-            position: fixed; 
-            bottom: 0; 
-            width: 100%; 
-            background: rgba(0,0,0,0.95); 
-            color: #fff; 
-            padding: 5px; 
-            padding-bottom: max(5px, env(safe-area-inset-bottom)); /* 홈 바가 있는 폰 대응 */
-            font-size: 0.85rem; 
-            text-align: center; 
-            height: auto;
-        }
+        .status-bar { position: fixed; bottom: 0; width: 100%; background: rgba(0,0,0,0.9); color: #fff; padding: 10px; font-size: 0.9rem; text-align: center; padding-bottom: max(10px, env(safe-area-inset-bottom)); }
         
         @media screen and (orientation: portrait) { 
             .portrait-warning { display: flex !important; position: fixed; top:0; left:0; width:100%; height:100%; background: #111; color: #fff; z-index: 9999; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 30px; } 
@@ -110,8 +66,8 @@
 
 <div class="portrait-warning">
     <div style="font-size: 4rem; margin-bottom: 15px;">🎸</div>
-    <h2>화면을 가로로 돌려주세요</h2>
-    <p>다이나믹 아일랜드와 노치 영역을 피해서<br>최적화된 화면을 구성합니다.</p>
+    <h2>가로 모드로 돌려주세요</h2>
+    <p>기타 지판을 넓게 보려면 가로 모드가 필수입니다.</p>
 </div>
 
 <div class="header">
@@ -125,22 +81,15 @@
         <div id="target-note" class="target-note">-</div>
         <div id="target-desc" class="target-desc">-</div>
     </div>
-
-    <div class="str-selector" id="strSelectBox" style="visibility: hidden;">
-        <button class="str-mini-btn" onclick="selectMaster(6)">6</button>
-        <button class="str-mini-btn" onclick="selectMaster(5)">5</button>
-        <button class="str-mini-btn" onclick="selectMaster(4)">4</button>
-        <button class="str-mini-btn" onclick="selectMaster(3)">3</button>
-        <button class="str-mini-btn active" onclick="selectMaster(2)">2</button>
-        <button class="str-mini-btn" onclick="selectMaster(1)">1</button>
-    </div>
+    
+    <a href="index.html" style="text-decoration:none; font-size:0.7rem; color:#666; border:1px solid #ccc; padding:5px; border-radius:5px;">PC버전</a>
 </div>
 
 <div class="fretboard-wrapper">
     <div class="fretboard" id="fretboard"></div>
 </div>
 
-<div id="status" class="status-bar">준비 완료!</div>
+<div id="status" class="status-bar">시작하려면 음을 확인하세요!</div>
 
 <script>
     function setScreenSize() {
@@ -169,25 +118,25 @@
             const fretDiv = document.createElement('div');
             fretDiv.className = 'fret';
             fretDiv.innerHTML = `<div class="fret-num">${f===0?'N':f}</div>`;
+            
             if (inlays.includes(f)) {
                 if (f===12) fretDiv.innerHTML += `<div class="inlay inlay-12-top"></div><div class="inlay inlay-12-bottom"></div>`;
                 else fretDiv.innerHTML += `<div class="inlay"></div>`;
             }
+
             for (let s = 1; s <= 6; s++) {
                 const node = document.createElement('div');
                 node.className = `node node-s${s}`;
                 node.style.top = ((s - 0.5) * (100 / 6)) + "%";
                 node.style.left = (f === 0 ? "25%" : "50%");
                 const noteIdx = (stringRoots[s-1] + f) % 12;
-                const noteName = noteNames[noteIdx];
-                node.dataset.note = noteName;
+                node.dataset.note = noteNames[noteIdx];
                 node.dataset.string = s;
                 node.dataset.fret = f;
-                node.innerText = noteName;
                 
-                const handler = (e) => { e.preventDefault(); handle(node, noteName, s, f); };
+                const handler = (e) => { e.preventDefault(); handle(node, node.dataset.note, s, f); };
                 node.addEventListener('touchstart', handler);
-                node.addEventListener('mousedown', () => handle(node, noteName, s, f));
+                node.addEventListener('mousedown', () => handle(node, node.dataset.note, s, f));
                 fretDiv.appendChild(node);
             }
             board.appendChild(fretDiv);
@@ -204,43 +153,29 @@
 
     function handle(node, note, s, f) {
         if (f > 12 || (currentMode === 'MASTER' && s !== selectedMaster) || node.classList.contains('correct')) return;
-        const isNote = (note === currentTargetNote);
-        const isStr = (currentMode === 'RANDOM' ? s === currentTargetString : true);
-        if (isNote && isStr) {
+        if (note === currentTargetNote && (currentMode === 'RANDOM' ? s === currentTargetString : true)) {
             node.classList.add('correct');
+            node.innerText = note;
             foundCount++;
-            updateStatus();
+            document.getElementById('status').innerText = `남은 개수: ${totalToFind - foundCount}`;
             if (foundCount === totalToFind) { 
-                document.getElementById('status').innerText = "🎉 미션 성공!"; 
+                document.getElementById('status').innerText = "🎉 성공! 다음 문제..."; 
                 setTimeout(startNewQuiz, 1000); 
             }
         } else {
             node.classList.add('wrong');
-            document.getElementById('status').innerText = `${s}번줄 ${f}F(${note}) 선택 - 오답!`;
-            setTimeout(() => node.classList.remove('wrong'), 600);
+            node.innerText = note;
+            setTimeout(() => { node.classList.remove('wrong'); node.innerText = ""; }, 600);
         }
     }
 
-    function changeMode(m) { 
-        currentMode = m; 
-        document.getElementById('strSelectBox').style.visibility = (m==='MASTER'?'visible':'hidden');
-        startNewQuiz(); 
-    }
-
-    function selectMaster(s) { 
-        selectedMaster = s; 
-        document.querySelectorAll('.str-mini-btn').forEach(btn => {
-            btn.classList.toggle('active', parseInt(btn.innerText) === s);
-        });
-        startNewQuiz(); 
-    }
-
-    function updateStatus() { document.getElementById('status').innerText = `남은 개수: ${totalToFind - foundCount}`; }
+    function changeMode(m) { currentMode = m; startNewQuiz(); }
 
     function startNewQuiz() {
         const nodes = document.querySelectorAll('.node');
         nodes.forEach(n => {
             n.classList.remove('correct', 'wrong');
+            n.innerText = "";
             if (currentMode === 'MASTER') n.classList.toggle('dimmed', parseInt(n.dataset.string) !== selectedMaster);
             else n.classList.remove('dimmed');
         });
@@ -255,16 +190,15 @@
             document.getElementById('target-desc').innerText = `${currentTargetString}번 줄에서 찾기`;
             totalToFind = Array.from(nodes).filter(n => n.dataset.note === currentTargetNote && parseInt(n.dataset.string) === currentTargetString && parseInt(n.dataset.fret) <= 12).length;
         } else {
-            document.getElementById('target-desc').innerText = `${selectedMaster}번 줄 집중 훈련`;
+            document.getElementById('target-desc').innerText = `${selectedMaster}번 줄 훈련`;
             totalToFind = Array.from(nodes).filter(n => n.dataset.note === currentTargetNote && parseInt(n.dataset.string) === selectedMaster && parseInt(n.dataset.fret) <= 12).length;
         }
-        if (totalToFind === 0) return startNewQuiz();
         foundCount = 0;
-        updateStatus();
+        document.getElementById('status').innerText = `남은 개수: ${totalToFind}`;
     }
 
     init();
-    changeMode('ALL');
+    startNewQuiz();
 </script>
 </body>
 </html>

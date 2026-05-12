@@ -2,65 +2,67 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>기타 지판 트레이너 Pro (통합본)</title>
+    <title>기타 지판 트레이너 Pro (PC)</title>
     <style>
-        :root { --fret-gold: #c5a059; --wood: #2c1e14; --string-base: #bdc3c7; --dot: #ecf0f1; --primary: #4a90e2; }
+        :root { --fret-gold: #c5a059; --wood: #2c1e14; --string-base: #bdc3c7; --dot: #ffffff; --primary: #4a90e2; }
         body { font-family: 'Pretendard', sans-serif; background: #f0f2f5; display: flex; flex-direction: column; align-items: center; padding: 20px; }
         .card { background: white; padding: 2rem; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 95%; max-width: 1400px; text-align: center; }
         
+        /* 네비게이션 및 모바일 링크 */
         .main-nav { display: flex; flex-direction: column; gap: 15px; margin-bottom: 30px; border-bottom: 2px solid #eee; padding-bottom: 20px; }
+        .mobile-banner { background: #e8f2ff; padding: 10px; border-radius: 10px; margin-bottom: 15px; border: 1px dashed var(--primary); }
+        .mobile-banner a { color: var(--primary); text-decoration: none; font-weight: bold; font-size: 1rem; }
+
         .mode-selector, .string-selector { display: flex; justify-content: center; gap: 10px; }
-        
         .btn { padding: 10px 20px; border: 2px solid var(--primary); border-radius: 30px; background: white; color: var(--primary); font-weight: bold; cursor: pointer; transition: 0.3s; }
         .btn.active { background: var(--primary); color: white; }
-        .str-btn { border-color: #ddd; color: #666; font-size: 0.9rem; }
-        .str-btn.active { border-color: #2c3e50; background: #2c3e50; color: white; }
-
-        .quiz-header { min-height: 120px; margin-bottom: 20px; }
-        .target-note { font-size: 3.5rem; font-weight: 800; color: #2c3e50; margin: 5px 0; }
-        .target-desc { color: #7f8c8d; font-size: 1.1rem; font-weight: bold; }
 
         .fretboard-container { width: 100%; overflow-x: auto; padding: 40px 0; background: #1a1a1a; border-radius: 10px; margin: 20px 0; }
         .fretboard { position: relative; display: flex; width: 1450px; height: 220px; background: var(--wood); border-top: 4px solid #444; border-bottom: 4px solid #444; margin: 0 auto; }
         
-        .fret { flex: 1; border-right: 4px solid var(--fret-gold); position: relative; cursor: pointer; }
+        .fret { flex: 1; border-right: 4px solid var(--fret-gold); position: relative; z-index: 1; }
         .fret:first-child { border-right: 12px solid #ddd; flex: 0.4; }
         .fret-num { position: absolute; bottom: -35px; width: 100%; text-align: center; color: #999; font-size: 0.9rem; font-weight: bold; }
 
-        .inlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 16px; height: 16px; background: var(--dot); border-radius: 50%; opacity: 0.6; pointer-events: none; }
-        .inlay-12-top { transform: translate(-50%, -150%); }
-        .inlay-12-bottom { transform: translate(-50%, 50%); }
+        /* 인레이 수정: z-index 추가 및 투명도 조절 */
+        .inlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 18px; height: 18px; background: var(--dot); border-radius: 50%; opacity: 0.8; z-index: 2; pointer-events: none; box-shadow: inset 0 0 5px rgba(0,0,0,0.3); }
+        .inlay-12-top { transform: translate(-50%, -180%); }
+        .inlay-12-bottom { transform: translate(-50%, 80%); }
 
-        .strings { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: space-around; pointer-events: none; }
+        .strings { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: space-around; pointer-events: none; z-index: 3; }
         .string { background: var(--string-base); width: 100%; box-shadow: 0 1px 2px rgba(0,0,0,0.6); }
+        /* 줄 굵기 */
         .string-1 { height: 1.0px; } .string-2 { height: 1.5px; } .string-3 { height: 2.0px; }
         .string-4 { height: 3.0px; } .string-5 { height: 4.0px; } .string-6 { height: 5.5px; }
 
-        .node { position: absolute; width: 38px; height: 38px; border-radius: 50%; transform: translate(-50%, -50%); cursor: pointer; z-index: 10; display: flex; align-items: center; justify-content: center; transition: 0.1s; color: transparent; font-weight: bold; }
+        .node { position: absolute; width: 38px; height: 38px; border-radius: 50%; transform: translate(-50%, -50%); cursor: pointer; z-index: 10; display: flex; align-items: center; justify-content: center; color: transparent; font-weight: bold; }
         .node.correct { background: #27ae60; color: white !important; box-shadow: 0 0 15px #27ae60; }
         .node.wrong { background: #e74c3c; color: white !important; }
         .node.dimmed { opacity: 0.15; pointer-events: none; }
 
         .status { height: 50px; margin-top: 10px; font-weight: bold; font-size: 1.3rem; }
-        .mobile-link { margin-top: 20px; font-size: 0.9rem; }
     </style>
 </head>
 <body>
 
 <div class="card">
+    <div class="mobile-banner">
+        <a href="mobile.html">📱 스마트폰으로 접속하셨나요? 모바일 최적화 버전으로 가기</a>
+    </div>
+
     <div class="main-nav">
         <div class="mode-selector">
-            <button id="mode-ALL" class="btn active" onclick="changeMode('ALL')">한 음 싹 다 찾기</button>
-            <button id="mode-RANDOM" class="btn" onclick="changeMode('RANDOM')">랜덤 줄 지정 퀴즈</button>
-            <button id="mode-MASTER" class="btn" onclick="changeMode('MASTER')">한 줄 마스터 모드</button>
+            <button id="mode-ALL" class="btn active" onclick="changeMode('ALL')">전체 찾기</button>
+            <button id="mode-RANDOM" class="btn" onclick="changeMode('RANDOM')">랜덤 줄 퀴즈</button>
+            <button id="mode-MASTER" class="btn" onclick="changeMode('MASTER')">한 줄 마스터</button>
         </div>
         <div class="string-selector" id="str-nav" style="display:none;">
-            <button class="btn str-btn" onclick="selectMasterString(6)">6줄(E)</button>
-            <button class="btn str-btn" onclick="selectMasterString(5)">5줄(A)</button>
-            <button class="btn str-btn" onclick="selectMasterString(4)">4줄(D)</button>
-            <button class="btn str-btn" onclick="selectMasterString(3)">3줄(G)</button>
-            <button class="btn str-btn active" onclick="selectMasterString(2)">2줄(B)</button>
-            <button class="btn str-btn" onclick="selectMasterString(1)">1줄(E)</button>
+            <button class="btn str-btn" onclick="selectMasterString(6)">6줄</button>
+            <button class="btn str-btn" onclick="selectMasterString(5)">5줄</button>
+            <button class="btn str-btn" onclick="selectMasterString(4)">4줄</button>
+            <button class="btn str-btn" onclick="selectMasterString(3)">3줄</button>
+            <button class="btn str-btn active" onclick="selectMasterString(2)">2줄</button>
+            <button class="btn str-btn" onclick="selectMasterString(1)">1줄</button>
         </div>
     </div>
 
@@ -73,11 +75,10 @@
     <div class="fretboard-container">
         <div class="fretboard" id="fretboard"></div>
     </div>
-    
-    <div class="mobile-link"><a href="mobile.html">📱 모바일 버전으로 전환하기</a></div>
 </div>
 
 <script>
+    // JS 코드는 기존과 동일하되, 인레이 생성 부분만 명확히 유지
     const noteNames = ["E", "F", "F#", "G", "G#", "A", "A#", "B", "C", "C#", "D", "D#"];
     const stringRoots = [0, 7, 3, 10, 5, 0]; 
     const quizNotes = ["C", "D", "E", "F", "G", "A", "B"];
@@ -97,10 +98,16 @@
             const fretDiv = document.createElement('div');
             fretDiv.className = 'fret';
             fretDiv.innerHTML = `<div class="fret-num">${f === 0 ? 'NUT' : f}</div>`;
+            
+            // 인레이 추가 Logic
             if (inlays.includes(f)) {
-                if (f === 12) fretDiv.innerHTML += `<div class="inlay inlay-12-top"></div><div class="inlay inlay-12-bottom"></div>`;
-                else fretDiv.innerHTML += `<div class="inlay"></div>`;
+                if (f === 12) {
+                    fretDiv.innerHTML += `<div class="inlay inlay-12-top"></div><div class="inlay inlay-12-bottom"></div>`;
+                } else {
+                    fretDiv.innerHTML += `<div class="inlay"></div>`;
+                }
             }
+
             for (let s = 1; s <= 6; s++) {
                 const node = document.createElement('div');
                 node.className = `node node-s${s}`;
@@ -130,24 +137,22 @@
     function handleNodeClick(node, noteName, string, fret) {
         if (fret > 12) return;
         if (currentMode === 'MASTER' && string !== selectedMasterString) return;
+        if (node.classList.contains('correct')) return;
 
         const isCorrectNote = (noteName === currentTargetNote);
         const isCorrectString = (currentMode === 'RANDOM' ? string === currentTargetString : true);
 
         if (isCorrectNote && isCorrectString) {
-            if (!node.classList.contains('correct')) {
-                node.classList.add('correct');
-                foundCount++;
-                updateStatus();
-                if (foundCount === totalToFind) {
-                    document.getElementById('status').innerText = "🎉 미션 성공!";
-                    document.getElementById('status').style.color = "#27ae60";
-                    setTimeout(startNewQuiz, 1500);
-                }
+            node.classList.add('correct');
+            foundCount++;
+            updateStatus();
+            if (foundCount === totalToFind) {
+                document.getElementById('status').innerText = "🎉 미션 성공!";
+                setTimeout(startNewQuiz, 1500);
             }
         } else {
             node.classList.add('wrong');
-            document.getElementById('status').innerHTML = `<span style="color:#e74c3c">${string}번줄 ${fret}F(${noteName}) 선택 - 오답!</span>`;
+            document.getElementById('status').innerHTML = `<span style="color:#e74c3c">${string}번줄 ${fret}F(${noteName}) 오답!</span>`;
             setTimeout(() => node.classList.remove('wrong'), 800);
         }
     }
@@ -161,42 +166,39 @@
 
     function selectMasterString(s) {
         selectedMasterString = s;
-        document.querySelectorAll('.str-btn').forEach((btn, idx) => btn.classList.toggle('active', (6 - idx) === s));
+        document.querySelectorAll('.str-btn').forEach(btn => {
+            const isTarget = btn.innerText.includes(s.toString());
+            btn.classList.toggle('active', isTarget);
+        });
         startNewQuiz();
     }
 
     function updateStatus() {
-        document.getElementById('status').innerText = `진행도: ${foundCount} / ${totalToFind}`;
-        document.getElementById('status').style.color = "#2c3e50";
+        document.getElementById('status').innerText = `남은 음: ${totalToFind - foundCount}`;
     }
 
     function startNewQuiz() {
         const nodes = document.querySelectorAll('.node');
         nodes.forEach(n => {
             n.classList.remove('correct', 'wrong');
-            if (currentMode === 'MASTER') {
-                n.classList.toggle('dimmed', parseInt(n.dataset.string) !== selectedMasterString);
-            } else {
-                n.classList.remove('dimmed');
-            }
+            if (currentMode === 'MASTER') n.classList.toggle('dimmed', parseInt(n.dataset.string) !== selectedMasterString);
+            else n.classList.remove('dimmed');
         });
 
         currentTargetNote = quizNotes[Math.floor(Math.random() * quizNotes.length)];
         document.getElementById('target-note').innerText = currentTargetNote;
 
         if (currentMode === 'ALL') {
-            document.getElementById('target-desc').innerText = "지판 전체(0-12F)에서 다음 음을 모두 찾으세요";
+            document.getElementById('target-desc').innerText = "지판 전체에서 찾기";
             totalToFind = Array.from(nodes).filter(n => n.dataset.note === currentTargetNote && parseInt(n.dataset.fret) <= 12).length;
         } else if (currentMode === 'RANDOM') {
             currentTargetString = Math.floor(Math.random() * 6) + 1;
-            document.getElementById('target-desc').innerText = `${currentTargetString}번 줄에서 다음 음을 모두 찾으세요`;
+            document.getElementById('target-desc').innerText = `${currentTargetString}번 줄에서 찾기`;
             totalToFind = Array.from(nodes).filter(n => n.dataset.note === currentTargetNote && parseInt(n.dataset.string) === currentTargetString && parseInt(n.dataset.fret) <= 12).length;
         } else {
-            document.getElementById('target-desc').innerText = `${selectedMasterString}번 줄에서 다음 음을 모두 찾으세요`;
+            document.getElementById('target-desc').innerText = `${selectedMasterString}번 줄 집중 훈련`;
             totalToFind = Array.from(nodes).filter(n => n.dataset.note === currentTargetNote && parseInt(n.dataset.string) === selectedMasterString && parseInt(n.dataset.fret) <= 12).length;
         }
-        
-        if (totalToFind === 0) return startNewQuiz();
         foundCount = 0;
         updateStatus();
     }
