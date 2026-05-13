@@ -24,8 +24,8 @@
         .fretboard-wrap { overflow-x: auto; background: #1a1a1a; padding: 50px 0; border-radius: 15px; position: relative; }
         .fretboard { position: relative; display: flex; width: 1500px; height: 240px; background: var(--wood); border-top: 5px solid #444; border-bottom: 5px solid #444; margin: 0 auto; }
         
-        /* 줄 레이어: 확실하게 보이도록 최상단 Z-index 및 두께 설정 */
-        .string-layer { position: absolute; inset: 0; pointer-events: none; z-index: 20; }
+        /* 줄 레이어 z-index 1로 고정 */
+        .string-layer { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
         .string { 
             position: absolute;
             left: 0;
@@ -35,7 +35,6 @@
             border-radius: 999px;
             transition: opacity 0.3s;
         }
-        /* 6번줄(가장 위) ~ 1번줄(가장 아래) 두께 차별화 */
         .s1 { top: 8%; height: 1.2px; }
         .s2 { top: 25%; height: 1.8px; }
         .s3 { top: 42%; height: 2.8px; }
@@ -44,20 +43,21 @@
         .s6 { top: 91%; height: 7px; }
         .string.dimmed { opacity: 0.1; }
 
-        .fret { flex: 1; border-right: 4px solid var(--fret); position: relative; z-index: 2; }
+        /* fret의 z-index를 아예 제거하여 자식(node)이 컨텍스트에 갇히지 않게 함 */
+        .fret { flex: 1; border-right: 4px solid var(--fret); position: relative; }
         .fret:first-child { border-right: 12px solid #ddd; flex: 0.5; } 
         .inlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 20px; height: 20px; background: var(--dot); border-radius: 50%; opacity: 0.8; box-shadow: 0 0 10px #fff; }
-        /* 12번 프렛 이중 인레이 */
         .inlay-12-top { transform: translate(-50%, -180%); }
         .inlay-12-bottom { transform: translate(-50%, 80%); }
 
+        /* 음표시 레이어 z-index 10으로 올려서 줄(z-index 1) 위로 덮음 */
         .node { position: absolute; width: 42px; height: 42px; border-radius: 50%; transform: translate(-50%, -50%); cursor: pointer; z-index: 10; display: flex; align-items: center; justify-content: center; font-weight: bold; color: transparent; }
         .node.correct { background: #27ae60 !important; color: white !important; box-shadow: 0 0 15px #27ae60; }
         .node.wrong { background: #e74c3c !important; color: white !important; }
         .node.dimmed { opacity: 0.05; pointer-events: none; }
         .fret-num { position: absolute; top: -35px; width: 100%; text-align: center; color: #aaa; font-weight: bold; }
     </style>
-<script type="text/javascript" nonce="927abe27d6c74da6a7bdee87b88" src="//local.adguard.org?ts=1778587826530&amp;type=content-script&amp;dmn=chatgpt.com&amp;url=https%3A%2F%2Fchatgpt.com%2Fbackend-api%2Festuary%2Fcontent%3Fid%3Dfile_00000000887c720699ab4221c0a9a33c%26ts%3D494055%26p%3Dfs%26cid%3D1%26sig%3Dd44aff840b7a24be5523ee98924c54e05a1b19b733eb7894eb2b88dd611e4e4b%26v%3D0&amp;app=chrome.exe&amp;css=2&amp;js=1&amp;rel=1&amp;rji=1&amp;sbe=1&amp;stealth=1&amp;st-dnt"></script><script type="text/javascript" nonce="927abe27d6c74da6a7bdee87b88" src="//local.adguard.org?ts=1778587826530&amp;name=AdGuard%20Extra%20%28Beta%29&amp;name=AdGuard%20Popup%20Blocker%20%28Beta%29&amp;type=user-script"></script><script type="text/javascript" nonce="927abe27d6c74da6a7bdee87b88" src="//local.adguard.org?ts=1778587826530&amp;type=content-script&amp;dmn=chatgpt.com&amp;url=https%3A%2F%2Fchatgpt.com%2Fbackend-api%2Festuary%2Fcontent%3Fid%3Dfile_00000000da787209ad7cf781f7e8aaf3%26ts%3D494055%26p%3Dfs%26cid%3D1%26sig%3Df82e80977161a3eeaa6c5f724d001a7bd98bacae3141cc36e6551553bda44e13%26v%3D0&amp;app=chrome.exe&amp;css=2&amp;js=1&amp;rel=1&amp;rji=1&amp;sbe=1&amp;stealth=1&amp;st-dnt"></script><script type="text/javascript" nonce="927abe27d6c74da6a7bdee87b88" src="//local.adguard.org?ts=1778587826530&amp;name=AdGuard%20Extra%20%28Beta%29&amp;name=AdGuard%20Popup%20Blocker%20%28Beta%29&amp;type=user-script"></script></head>
+</head>
 <body>
 
 <div class="container">
@@ -74,7 +74,6 @@
                 모바일 버전 열기
             </a>
         </div>
-
             <button id="acc-btn" class="btn" onclick="toggleAccidental()"># / b 포함 활성화</button>
             <div id="str-ctrl" style="display:none; align-items:center; gap:15px;">
                 <span id="bulk-ctrl">
@@ -103,11 +102,13 @@
 <script>
     const noteNames = ["E", "F", "F#", "G", "G#", "A", "A#", "B", "C", "C#", "D", "D#"];
     const altNames = { "F#":"Gb", "G#":"Ab", "A#":"Bb", "C#":"Db", "D#":"Eb" };
-    // 튜닝 수정: 1~6번줄 (E-B-G-D-A-E)
-    const stringRoots = [0, 7, 2, 9, 4, 0]; 
+    
+    // 정확한 표준 튜닝 (1번줄부터 6번줄 순서: E, B, G, D, A, E)
+    // 0:E, 7:B, 3:G, 10:D, 5:A, 0:E
+    const stringRoots = [0, 7, 3, 10, 5, 0]; 
     
     let currentMode = 'ALL', useAcc = false;
-    let activeOne = 2, activeMulti = [true, true, true, true, true, true];
+    let activeOne = 1, activeMulti = [true, true, true, true, true, true];
     let targetNote = "", targetStrNum = -1, foundCount = 0, totalToFind = 0;
 
     function init() {
@@ -134,7 +135,6 @@
             const fd = document.createElement('div'); fd.className = 'fret';
             fd.innerHTML = `<div class="fret-num">${f===0?'NUT':f}</div>`;
             
-            // 인레이 및 12프렛 이중 인레이 복구
             if([3,5,7,9,12,15].includes(f)) {
                 if(f===12) {
                     fd.innerHTML += `<div class="inlay inlay-12-top"></div><div class="inlay inlay-12-bottom"></div>`;
@@ -146,11 +146,15 @@
             for(let s=1; s<=6; s++) {
                 const n = document.createElement('div'); n.className = 'node';
                 n.style.top = `${(s-0.5)*(100/6)}%`;
-                n.style.left = f===0?"35%":"50%";
-                const idx = (stringRoots[s-1]+f)%12;
+                // 0프렛을 포함하여 모든 프렛의 노드를 정중앙(50%)에 맞춤
+                n.style.left = "50%";
+                
+                // 정확한 음 계산 (s는 1~6번 줄)
+                const idx = (stringRoots[s-1] + f) % 12;
                 n.dataset.n1 = noteNames[idx];
                 n.dataset.n2 = altNames[noteNames[idx]] || "";
-                n.dataset.s = s; n.dataset.f = f;
+                n.dataset.s = s; 
+                n.dataset.f = f;
                 n.onclick = () => check(n); fd.appendChild(n);
             }
             board.appendChild(fd);
@@ -167,12 +171,15 @@
     }
 
     function updateUI() {
-        const lines = document.querySelectorAll('.string');
         for(let i=1; i<=6; i++) {
             const b = document.getElementById(`sbtn-${i}`);
             const isActive = (currentMode === 'ONE') ? activeOne === i : activeMulti[i-1];
             b.classList.toggle('active', isActive);
-            lines[6-i].classList.toggle('dimmed', !isActive);
+            // 각 번호에 맞는 줄 요소를 직접 타겟팅
+            const strLine = document.querySelector(`.string.s${i}`);
+            if(strLine) {
+                strLine.classList.toggle('dimmed', !isActive);
+            }
         }
     }
 
