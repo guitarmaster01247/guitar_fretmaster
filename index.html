@@ -57,7 +57,7 @@
         .node.dimmed { opacity: 0.05; pointer-events: none; }
         .fret-num { position: absolute; top: -35px; width: 100%; text-align: center; color: #aaa; font-weight: bold; }
     </style>
-</head>
+<script type="text/javascript" nonce="b47a6c5a0adf41e9b6ca62aaca3" src="//local.adguard.org?ts=1781135465175&amp;type=content-script&amp;dmn=chatgpt.com&amp;url=https%3A%2F%2Fchatgpt.com%2Fbackend-api%2Festuary%2Fcontent%3Fid%3Dfile_000000007ad47206bd9e8f6f556b9a38%26fn%3Dindex_seq.html%26cd%3Dattachment%26ts%3D494763%26p%3Dfs%26cid%3D1%26sig%3D6116f8ef55c1c5e99233281c45d8e1e8804213ec9d68e1551e8f9e733db554cc%26v%3D0&amp;app=chrome.exe&amp;css=2&amp;js=1&amp;rel=1&amp;rji=1&amp;sbe=1&amp;stealth=1&amp;st-dnt"></script><script type="text/javascript" nonce="b47a6c5a0adf41e9b6ca62aaca3" src="//local.adguard.org?ts=1781135465175&amp;name=AdGuard%20Extra%20%28Beta%29&amp;name=AdGuard%20Popup%20Blocker%20%28Beta%29&amp;type=user-script"></script></head>
 <body>
 
 <div class="container">
@@ -65,6 +65,7 @@
         <button id="tab-ALL" class="tab active" onclick="switchMode('ALL')">한 음 싹 다 찾기</button>
         <button id="tab-ONE" class="tab" onclick="switchMode('ONE')">한 줄 마스터</button>
         <button id="tab-MULTI" class="tab" onclick="switchMode('MULTI')">다중 줄 연습</button>
+        <button id="tab-SEQ" class="tab" onclick="switchMode('SEQ')">6→1→6 순차</button>
     </div>
 
     <div class="config-panel">
@@ -110,6 +111,8 @@
     let currentMode = 'ALL', useAcc = false;
     let activeOne = 1, activeMulti = [true, true, true, true, true, true];
     let targetNote = "", targetStrNum = -1, foundCount = 0, totalToFind = 0;
+    const seqOrders = [[6,5,4,3,2,1], [1,2,3,4,5,6]];
+    let seqPhase = 0, seqIndex = 0;
 
     function init() {
         const btnBox = document.getElementById('str-btns');
@@ -165,33 +168,48 @@
     function switchMode(m) {
         currentMode = m;
         document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.id === `tab-${m}`));
-        document.getElementById('str-ctrl').style.display = (m === 'ALL' ? 'none' : 'flex');
+        document.getElementById('str-ctrl').style.display = (m === 'ALL' || m === 'SEQ' ? 'none' : 'flex');
         document.getElementById('bulk-ctrl').style.display = (m === 'MULTI' ? 'inline' : 'none');
         updateUI(); newQuiz();
+    }
+
+    function isStringActive(i) {
+        if(currentMode === 'ALL') return true;
+        if(currentMode === 'ONE') return activeOne === i;
+        if(currentMode === 'MULTI') return activeMulti[i-1];
+        if(currentMode === 'SEQ') return targetStrNum === i;
+        return true;
+    }
+
+    function isNodeDisabled(n) {
+        const f = parseInt(n.dataset.f);
+        const s = parseInt(n.dataset.s);
+        if(f > 12) return true;
+        if(currentMode === 'ONE' || currentMode === 'MULTI' || currentMode === 'SEQ') return s !== targetStrNum;
+        return false;
     }
 
     function updateUI() {
         for(let i=1; i<=6; i++) {
             const b = document.getElementById(`sbtn-${i}`);
-            const isActive = (currentMode === 'ONE') ? activeOne === i : activeMulti[i-1];
-            b.classList.toggle('active', isActive);
-            // 각 번호에 맞는 줄 요소를 직접 타겟팅
+            if(b) b.classList.toggle('active', isStringActive(i));
             const strLine = document.querySelector(`.string.s${i}`);
-            if(strLine) {
-                strLine.classList.toggle('dimmed', !isActive);
-            }
+            if(strLine) strLine.classList.toggle('dimmed', !isStringActive(i));
         }
+        document.querySelectorAll('.node').forEach(n => n.classList.toggle('dimmed', isNodeDisabled(n)));
     }
 
     function check(n) {
         if(parseInt(n.dataset.f) > 12 || n.classList.contains('correct')) return;
         const s = parseInt(n.dataset.s);
-        if((currentMode === 'ONE' || currentMode === 'MULTI') && s !== targetStrNum) return;
+        if((currentMode === 'ONE' || currentMode === 'MULTI' || currentMode === 'SEQ') && s !== targetStrNum) return;
 
         if(n.dataset.n1 === targetNote || n.dataset.n2 === targetNote) {
             n.classList.add('correct'); n.innerText = targetNote;
             foundCount++; updateScore();
-            if(foundCount >= totalToFind) setTimeout(newQuiz, 1000);
+            if(foundCount >= totalToFind) {
+                setTimeout(() => currentMode === 'SEQ' ? nextSeqStep() : newQuiz(), 700);
+            }
         } else {
             n.classList.add('wrong'); n.innerText = n.dataset.n1;
             setTimeout(() => { n.classList.remove('wrong'); n.innerText = ""; }, 500);
@@ -214,19 +232,58 @@
             targetStrNum = -1;
             document.getElementById('target-desc').innerText = "지판 전체(0-12F)에서 찾기";
             totalToFind = Array.from(nodes).filter(n => parseInt(n.dataset.f) <= 12 && (n.dataset.n1 === targetNote || n.dataset.n2 === targetNote)).length;
+        } else if(currentMode === 'SEQ') {
+            seqPhase = 0; seqIndex = 0;
+            targetStrNum = seqOrders[seqPhase][seqIndex];
+            document.getElementById('target-desc').innerText = seqDesc();
+            totalToFind = countOnString(targetStrNum, nodes);
         } else {
             const activeIdxs = (currentMode === 'ONE') ? [activeOne] : activeMulti.map((v,i)=>v?i+1:null).filter(v=>v);
             if(activeIdxs.length === 0) return;
             targetStrNum = activeIdxs[Math.floor(Math.random()*activeIdxs.length)];
             document.getElementById('target-desc').innerText = `${targetStrNum}번 줄에서 찾기`;
-            totalToFind = Array.from(nodes).filter(n => parseInt(n.dataset.s) === targetStrNum && parseInt(n.dataset.f) <= 12 && (n.dataset.n1 === targetNote || n.dataset.n2 === targetNote)).length;
+            totalToFind = countOnString(targetStrNum, nodes);
         }
         if(totalToFind === 0) return newQuiz();
         document.getElementById('target-note').innerText = targetNote;
-        foundCount = 0; updateScore();
+        foundCount = 0; updateScore(); updateUI();
     }
 
-    function updateScore() { document.getElementById('status').innerText = `남은 개수: ${totalToFind - foundCount}`; }
+    function countOnString(stringNum, nodes = document.querySelectorAll('.node')) {
+        return Array.from(nodes).filter(n => parseInt(n.dataset.s) === stringNum && parseInt(n.dataset.f) <= 12 && (n.dataset.n1 === targetNote || n.dataset.n2 === targetNote)).length;
+    }
+
+    function seqDesc() {
+        const dir = seqPhase === 0 ? '하행 6→1' : '상행 1→6';
+        return `${dir} · ${targetStrNum}번 줄에서 찾기`;
+    }
+
+    function nextSeqStep() {
+        seqIndex++;
+        if(seqIndex >= seqOrders[seqPhase].length) {
+            if(seqPhase === 0) {
+                seqPhase = 1; seqIndex = 0;
+            } else {
+                return newQuiz();
+            }
+        }
+        targetStrNum = seqOrders[seqPhase][seqIndex];
+        document.querySelectorAll('.node').forEach(n => { n.classList.remove('correct','wrong'); n.innerText = ""; });
+        totalToFind = countOnString(targetStrNum);
+        foundCount = 0;
+        document.getElementById('target-desc').innerText = seqDesc();
+        updateScore(); updateUI();
+        if(totalToFind === 0) nextSeqStep();
+    }
+
+    function updateScore() {
+        if(currentMode === 'SEQ') {
+            const step = seqPhase * 6 + seqIndex + 1;
+            document.getElementById('status').innerText = `단계 ${step}/12 · 남은 개수: ${totalToFind - foundCount}`;
+        } else {
+            document.getElementById('status').innerText = `남은 개수: ${totalToFind - foundCount}`;
+        }
+    }
     function toggleAccidental() { useAcc = !useAcc; document.getElementById('acc-btn').classList.toggle('active'); newQuiz(); }
     function allStrings(v) { activeMulti = activeMulti.map(()=>v); updateUI(); newQuiz(); }
 

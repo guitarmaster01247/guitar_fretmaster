@@ -50,7 +50,7 @@ body{ margin:0; font-family:sans-serif; background:#000; color:#fff; overflow:hi
 @media screen and (orientation:portrait){ .warning{ display:flex; position:fixed; inset:0; background:#111; z-index:9999; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:20px; } }
 @media (max-width:700px){ .btn{ min-height:38px; padding:8px 10px; font-size:0.82rem; } #status{ font-size:0.8rem; } }
 </style>
-</head>
+<script type="text/javascript" nonce="b47a6c5a0adf41e9b6ca62aaca3" src="//local.adguard.org?ts=1781135465175&amp;type=content-script&amp;dmn=chatgpt.com&amp;url=https%3A%2F%2Fchatgpt.com%2Fbackend-api%2Festuary%2Fcontent%3Fid%3Dfile_00000000c858720693acb7d06431a36e%26fn%3Dmobile_seq.html%26cd%3Dattachment%26ts%3D494763%26p%3Dfs%26cid%3D1%26sig%3D705e6af2a40c0b093d1cb6c77967cfba149793ed22b119f894dfae0dccf35c02%26v%3D0&amp;app=chrome.exe&amp;css=2&amp;js=1&amp;rel=1&amp;rji=1&amp;sbe=1&amp;stealth=1&amp;st-dnt"></script><script type="text/javascript" nonce="b47a6c5a0adf41e9b6ca62aaca3" src="//local.adguard.org?ts=1781135465175&amp;name=AdGuard%20Extra%20%28Beta%29&amp;name=AdGuard%20Popup%20Blocker%20%28Beta%29&amp;type=user-script"></script></head>
 <body>
 
 <div class="warning"><h2>🔄 화면을 가로로 돌려주세요</h2></div>
@@ -73,6 +73,7 @@ body{ margin:0; font-family:sans-serif; background:#000; color:#fff; overflow:hi
     <button class="btn active" id="m-ALL" onclick="setM('ALL')">전체</button>
     <button class="btn" id="m-ONE" onclick="setM('ONE')">1줄</button>
     <button class="btn" id="m-MULTI" onclick="setM('MULTI')">다중줄</button>
+    <button class="btn" id="m-SEQ" onclick="setM('SEQ')">6→1→6</button>
     <div id="string-controls">
         <button class="btn bulk-btn" onclick="toggleAllStrings(true)">전체ON</button>
         <button class="btn bulk-btn" onclick="toggleAllStrings(false)">전체OFF</button>
@@ -92,10 +93,26 @@ const stringRoots = [0, 7, 3, 10, 5, 0];
 
 let mode = 'ALL', useAcc = false, target = "", found = 0, total = 0, targetStr = -1;
 let activeStrings = [true, false, false, false, false, false];
+const seqOrders = [[6,5,4,3,2,1], [1,2,3,4,5,6]];
+let seqPhase = 0, seqIndex = 0;
 
 function updateBoardScale(){
     const ctrl = document.getElementById('string-controls');
     document.documentElement.style.setProperty('--board-height', (ctrl.style.display === 'flex') ? '185px' : '250px');
+}
+
+function isStringActive(s){
+    if(mode === 'ALL') return true;
+    if(mode === 'SEQ') return s === targetStr;
+    return activeStrings[s-1];
+}
+
+function isNodeDisabled(node){
+    const s = parseInt(node.dataset.s);
+    const f = parseInt(node.dataset.f);
+    if(f > 12) return true;
+    if(mode !== 'ALL') return s !== targetStr;
+    return false;
 }
 
 function render(){
@@ -131,20 +148,20 @@ function render(){
 
 function updateStringVisibility(){
     for(let s=1; s<=6; s++){
-        let active = (mode === 'ALL') ? true : activeStrings[s-1];
+        const active = isStringActive(s);
         const strLine = document.querySelector(`.string.s${s}`);
         if(strLine) strLine.classList.toggle('dimmed', !active);
     }
-    const nodes = document.querySelectorAll('.node');
-    nodes.forEach(node=>{
-        const s = parseInt(node.dataset.s);
-        let active = (mode === 'ALL') ? true : activeStrings[s-1];
-        node.classList.toggle('dimmed', !active);
-    });
+    document.querySelectorAll('.node').forEach(node=> node.classList.toggle('dimmed', isNodeDisabled(node)));
 }
 
 function updateStatus(){
-    document.getElementById('status').innerText = (mode === 'ALL') ? `남은: ${total-found}` : `${targetStr}번줄 · 남은 ${total-found}`;
+    if(mode === 'SEQ'){
+        const step = seqPhase * 6 + seqIndex + 1;
+        document.getElementById('status').innerText = `${seqPhase === 0 ? '하행 6→1' : '상행 1→6'} · ${targetStr}번줄 · ${step}/12 · 남은 ${total-found}`;
+    }else{
+        document.getElementById('status').innerText = (mode === 'ALL') ? `남은: ${total-found}` : `${targetStr}번줄 · 남은 ${total-found}`;
+    }
 }
 
 function check(n){
@@ -154,7 +171,7 @@ function check(n){
     if(n.dataset.n===target){
         n.classList.add('correct'); n.innerText = target;
         found++; updateStatus();
-        if(found>=total) setTimeout(newQuiz, 700);
+        if(found>=total) setTimeout(()=> mode === 'SEQ' ? nextSeqStep() : newQuiz(), 700);
     }else{
         n.classList.add('wrong'); n.innerText = n.dataset.n;
         setTimeout(()=>{ n.classList.remove('wrong'); n.innerText = ""; }, 450);
@@ -169,22 +186,46 @@ function newQuiz(){
     if(mode==='ALL'){
         targetStr = -1;
         total = Array.from(document.querySelectorAll('.node')).filter(n=> parseInt(n.dataset.f)<=12 && n.dataset.n===target ).length;
+    }else if(mode==='SEQ'){
+        seqPhase = 0; seqIndex = 0;
+        targetStr = seqOrders[seqPhase][seqIndex];
+        total = countOnString(targetStr);
     }else{
         let poolStrings = activeStrings.map((v,i)=> v ? i+1 : null).filter(v=>v);
         if(poolStrings.length===0) return;
         targetStr = (mode==='ONE') ? poolStrings[0] : poolStrings[Math.floor(Math.random()*poolStrings.length)];
-        total = Array.from(document.querySelectorAll('.node')).filter(n=> parseInt(n.dataset.s)===targetStr && parseInt(n.dataset.f)<=12 && n.dataset.n===target ).length;
+        total = countOnString(targetStr);
     }
     if(total===0) return newQuiz();
     document.getElementById('target-note').innerText = target;
     found = 0; updateStatus(); updateStringVisibility();
 }
 
+function countOnString(stringNum){
+    return Array.from(document.querySelectorAll('.node')).filter(n=> parseInt(n.dataset.s)===stringNum && parseInt(n.dataset.f)<=12 && n.dataset.n===target ).length;
+}
+
+function nextSeqStep(){
+    seqIndex++;
+    if(seqIndex >= seqOrders[seqPhase].length){
+        if(seqPhase === 0){
+            seqPhase = 1; seqIndex = 0;
+        }else{
+            return newQuiz();
+        }
+    }
+    targetStr = seqOrders[seqPhase][seqIndex];
+    document.querySelectorAll('.node').forEach(n=>{ n.classList.remove('correct', 'wrong'); n.innerText = ""; });
+    total = countOnString(targetStr);
+    found = 0; updateStatus(); updateStringVisibility();
+    if(total===0) nextSeqStep();
+}
+
 function setM(m){
     mode = m;
     document.querySelectorAll('.footer .btn').forEach(b=> b.classList.remove('active'));
     document.getElementById('m-'+m).classList.add('active');
-    document.getElementById('string-controls').style.display = (m==='ALL') ? 'none' : 'flex';
+    document.getElementById('string-controls').style.display = (m==='ALL' || m==='SEQ') ? 'none' : 'flex';
     document.querySelectorAll('.bulk-btn').forEach(btn=> btn.style.display = (m==='MULTI') ? '' : 'none');
     
     if(m==='ONE'){
