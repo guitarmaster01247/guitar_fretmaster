@@ -15,6 +15,8 @@
         .config-panel { background: #f8f9fa; padding: 20px; border-radius: 15px; margin-bottom: 25px; }
         .btn { padding: 8px 18px; border: 2px solid var(--primary); border-radius: 20px; background: white; color: var(--primary); cursor: pointer; font-weight: bold; }
         .btn.active { background: var(--primary); color: white; }
+        .acc-group { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+        .acc-label { font-weight: bold; color: #555; margin-right: 2px; }
         .str-btn { width: 45px; height: 45px; border-radius: 50%; border: 2px solid #ddd; color: #666; font-weight: bold; cursor: pointer; }
         .str-btn.active { background: #2c3e50; color: white; border-color: #2c3e50; }
 
@@ -57,7 +59,7 @@
         .node.dimmed { opacity: 0.05; pointer-events: none; }
         .fret-num { position: absolute; top: -35px; width: 100%; text-align: center; color: #aaa; font-weight: bold; }
     </style>
-<script type="text/javascript" nonce="b47a6c5a0adf41e9b6ca62aaca3" src="//local.adguard.org?ts=1781135465175&amp;type=content-script&amp;dmn=chatgpt.com&amp;url=https%3A%2F%2Fchatgpt.com%2Fbackend-api%2Festuary%2Fcontent%3Fid%3Dfile_000000007ad47206bd9e8f6f556b9a38%26fn%3Dindex_seq.html%26cd%3Dattachment%26ts%3D494763%26p%3Dfs%26cid%3D1%26sig%3D6116f8ef55c1c5e99233281c45d8e1e8804213ec9d68e1551e8f9e733db554cc%26v%3D0&amp;app=chrome.exe&amp;css=2&amp;js=1&amp;rel=1&amp;rji=1&amp;sbe=1&amp;stealth=1&amp;st-dnt"></script><script type="text/javascript" nonce="b47a6c5a0adf41e9b6ca62aaca3" src="//local.adguard.org?ts=1781135465175&amp;name=AdGuard%20Extra%20%28Beta%29&amp;name=AdGuard%20Popup%20Blocker%20%28Beta%29&amp;type=user-script"></script></head>
+</head>
 <body>
 
 <div class="container">
@@ -75,7 +77,12 @@
                 모바일 버전 열기
             </a>
         </div>
-            <button id="acc-btn" class="btn" onclick="toggleAccidental()"># / b 포함 활성화</button>
+            <div class="acc-group" id="acc-group">
+                <span class="acc-label">음 선택</span>
+                <button id="acc-natural" class="btn active" onclick="toggleNoteType('natural')">기본</button>
+                <button id="acc-sharp" class="btn" onclick="toggleNoteType('sharp')">#</button>
+                <button id="acc-flat" class="btn" onclick="toggleNoteType('flat')">b</button>
+            </div>
             <div id="str-ctrl" style="display:none; align-items:center; gap:15px;">
                 <span id="bulk-ctrl">
                     <button class="btn" style="border-color:#ccc; color:#666;" onclick="allStrings(true)">전체선택</button>
@@ -103,12 +110,42 @@
 <script>
     const noteNames = ["E", "F", "F#", "G", "G#", "A", "A#", "B", "C", "C#", "D", "D#"];
     const altNames = { "F#":"Gb", "G#":"Ab", "A#":"Bb", "C#":"Db", "D#":"Eb" };
+    const naturalNames = noteNames.filter(n => !n.includes('#'));
+    const sharpNames = noteNames.filter(n => n.includes('#'));
+    const flatNames = Object.values(altNames);
+
+    function getNotePool() {
+        let pool = [];
+        if(noteTypeEnabled.natural) pool = pool.concat(naturalNames);
+        if(noteTypeEnabled.sharp) pool = pool.concat(sharpNames);
+        if(noteTypeEnabled.flat) pool = pool.concat(flatNames);
+        return pool.length ? pool : naturalNames;
+    }
+
+    function updateNoteTypeButtons() {
+        document.getElementById('acc-natural').classList.toggle('active', noteTypeEnabled.natural);
+        document.getElementById('acc-sharp').classList.toggle('active', noteTypeEnabled.sharp);
+        document.getElementById('acc-flat').classList.toggle('active', noteTypeEnabled.flat);
+    }
+
+    function toggleNoteType(type) {
+        const enabledCount = Object.values(noteTypeEnabled).filter(Boolean).length;
+        if(noteTypeEnabled[type] && enabledCount === 1) return; // 최소 하나는 항상 켜두기
+        noteTypeEnabled[type] = !noteTypeEnabled[type];
+        updateNoteTypeButtons();
+        newQuiz();
+    }
+
+    function matchesTarget(n) {
+        return n.dataset.n1 === targetNote || n.dataset.n2 === targetNote;
+    }
     
     // 정확한 표준 튜닝 (1번줄부터 6번줄 순서: E, B, G, D, A, E)
     // 0:E, 7:B, 3:G, 10:D, 5:A, 0:E
     const stringRoots = [0, 7, 3, 10, 5, 0]; 
     
-    let currentMode = 'ALL', useAcc = false;
+    let currentMode = 'ALL';
+    let noteTypeEnabled = { natural: true, sharp: false, flat: false };
     let activeOne = 1, activeMulti = [true, true, true, true, true, true];
     let targetNote = "", targetStrNum = -1, foundCount = 0, totalToFind = 0;
     const seqOrders = [[6,5,4,3,2,1], [1,2,3,4,5,6]];
@@ -126,6 +163,7 @@
             };
             btnBox.appendChild(b);
         }
+        updateNoteTypeButtons();
         renderBoard();
     }
 
@@ -204,7 +242,7 @@
         const s = parseInt(n.dataset.s);
         if((currentMode === 'ONE' || currentMode === 'MULTI' || currentMode === 'SEQ') && s !== targetStrNum) return;
 
-        if(n.dataset.n1 === targetNote || n.dataset.n2 === targetNote) {
+        if(matchesTarget(n)) {
             n.classList.add('correct'); n.innerText = targetNote;
             foundCount++; updateScore();
             if(foundCount >= totalToFind) {
@@ -225,13 +263,13 @@
             n.classList.toggle('dimmed', isDim);
         });
 
-        let pool = useAcc ? noteNames.flatMap(n => altNames[n] ? [n, altNames[n]] : [n]) : noteNames.filter(n => !altNames[n] && n.indexOf('#') === -1);
+        let pool = getNotePool();
         targetNote = pool[Math.floor(Math.random()*pool.length)];
         
         if(currentMode === 'ALL') {
             targetStrNum = -1;
             document.getElementById('target-desc').innerText = "지판 전체(0-12F)에서 찾기";
-            totalToFind = Array.from(nodes).filter(n => parseInt(n.dataset.f) <= 12 && (n.dataset.n1 === targetNote || n.dataset.n2 === targetNote)).length;
+            totalToFind = Array.from(nodes).filter(n => parseInt(n.dataset.f) <= 12 && matchesTarget(n)).length;
         } else if(currentMode === 'SEQ') {
             seqPhase = 0; seqIndex = 0;
             targetStrNum = seqOrders[seqPhase][seqIndex];
@@ -250,7 +288,7 @@
     }
 
     function countOnString(stringNum, nodes = document.querySelectorAll('.node')) {
-        return Array.from(nodes).filter(n => parseInt(n.dataset.s) === stringNum && parseInt(n.dataset.f) <= 12 && (n.dataset.n1 === targetNote || n.dataset.n2 === targetNote)).length;
+        return Array.from(nodes).filter(n => parseInt(n.dataset.s) === stringNum && parseInt(n.dataset.f) <= 12 && matchesTarget(n)).length;
     }
 
     function seqDesc() {
@@ -284,7 +322,6 @@
             document.getElementById('status').innerText = `남은 개수: ${totalToFind - foundCount}`;
         }
     }
-    function toggleAccidental() { useAcc = !useAcc; document.getElementById('acc-btn').classList.toggle('active'); newQuiz(); }
     function allStrings(v) { activeMulti = activeMulti.map(()=>v); updateUI(); newQuiz(); }
 
     init();

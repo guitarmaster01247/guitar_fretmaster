@@ -44,20 +44,26 @@ body{ margin:0; font-family:sans-serif; background:#000; color:#fff; overflow:hi
 .footer{ flex-shrink:0; background:#222; display:flex; gap:5px; flex-wrap:wrap; padding: 8px 8px calc(8px + env(safe-area-inset-bottom)) 8px; }
 .btn{ background:#444; color:#fff; border:none; padding:10px 12px; border-radius:6px; font-weight:bold; font-size:0.95rem; min-height:42px; }
 .btn.active{ background:var(--primary); }
+.acc-group{ display:flex; gap:5px; flex-wrap:wrap; justify-content:flex-end; align-items:center; }
+.acc-group .btn{ padding:8px 9px; min-height:36px; font-size:0.82rem; }
 #string-controls{ width:100%; display:none; gap:6px; flex-wrap:wrap; margin-top:6px; }
 
 .warning{ display:none; }
 @media screen and (orientation:portrait){ .warning{ display:flex; position:fixed; inset:0; background:#111; z-index:9999; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:20px; } }
 @media (max-width:700px){ .btn{ min-height:38px; padding:8px 10px; font-size:0.82rem; } #status{ font-size:0.8rem; } }
 </style>
-<script type="text/javascript" nonce="b47a6c5a0adf41e9b6ca62aaca3" src="//local.adguard.org?ts=1781135465175&amp;type=content-script&amp;dmn=chatgpt.com&amp;url=https%3A%2F%2Fchatgpt.com%2Fbackend-api%2Festuary%2Fcontent%3Fid%3Dfile_00000000c858720693acb7d06431a36e%26fn%3Dmobile_seq.html%26cd%3Dattachment%26ts%3D494763%26p%3Dfs%26cid%3D1%26sig%3D705e6af2a40c0b093d1cb6c77967cfba149793ed22b119f894dfae0dccf35c02%26v%3D0&amp;app=chrome.exe&amp;css=2&amp;js=1&amp;rel=1&amp;rji=1&amp;sbe=1&amp;stealth=1&amp;st-dnt"></script><script type="text/javascript" nonce="b47a6c5a0adf41e9b6ca62aaca3" src="//local.adguard.org?ts=1781135465175&amp;name=AdGuard%20Extra%20%28Beta%29&amp;name=AdGuard%20Popup%20Blocker%20%28Beta%29&amp;type=user-script"></script></head>
+</head>
 <body>
 
 <div class="warning"><h2>🔄 화면을 가로로 돌려주세요</h2></div>
 <div class="header">
     <div id="status">-</div>
     <div id="target-note" class="target-note">-</div>
-    <button class="btn" onclick="toggleAcc()"># / b</button>
+    <div class="acc-group" id="acc-group">
+        <button id="acc-natural" class="btn active" onclick="toggleNoteType('natural')">기본</button>
+        <button id="acc-sharp" class="btn" onclick="toggleNoteType('sharp')">#</button>
+        <button id="acc-flat" class="btn" onclick="toggleNoteType('flat')">b</button>
+    </div>
 </div>
 
 <div class="fretboard-area">
@@ -88,10 +94,42 @@ body{ margin:0; font-family:sans-serif; background:#000; color:#fff; overflow:hi
 
 <script>
 const noteNames = ["E","F","F#","G","G#","A","A#","B","C","C#","D","D#"];
+const altNames = { "F#":"Gb", "G#":"Ab", "A#":"Bb", "C#":"Db", "D#":"Eb" };
+const naturalNames = noteNames.filter(n => !n.includes('#'));
+const sharpNames = noteNames.filter(n => n.includes('#'));
+const flatNames = Object.values(altNames);
+
+function getNotePool(){
+    let pool = [];
+    if(noteTypeEnabled.natural) pool = pool.concat(naturalNames);
+    if(noteTypeEnabled.sharp) pool = pool.concat(sharpNames);
+    if(noteTypeEnabled.flat) pool = pool.concat(flatNames);
+    return pool.length ? pool : naturalNames;
+}
+
+function updateNoteTypeButtons(){
+    document.getElementById('acc-natural').classList.toggle('active', noteTypeEnabled.natural);
+    document.getElementById('acc-sharp').classList.toggle('active', noteTypeEnabled.sharp);
+    document.getElementById('acc-flat').classList.toggle('active', noteTypeEnabled.flat);
+}
+
+function toggleNoteType(type){
+    const enabledCount = Object.values(noteTypeEnabled).filter(Boolean).length;
+    if(noteTypeEnabled[type] && enabledCount === 1) return; // 최소 하나는 항상 켜두기
+    noteTypeEnabled[type] = !noteTypeEnabled[type];
+    updateNoteTypeButtons();
+    newQuiz();
+}
+
+function matchesTarget(node){
+    return node.dataset.n1 === target || node.dataset.n2 === target;
+}
+
 // 정확한 표준 튜닝 
 const stringRoots = [0, 7, 3, 10, 5, 0];
 
-let mode = 'ALL', useAcc = false, target = "", found = 0, total = 0, targetStr = -1;
+let mode = 'ALL', target = "", found = 0, total = 0, targetStr = -1;
+let noteTypeEnabled = { natural: true, sharp: false, flat: false };
 let activeStrings = [true, false, false, false, false, false];
 const seqOrders = [[6,5,4,3,2,1], [1,2,3,4,5,6]];
 let seqPhase = 0, seqIndex = 0;
@@ -134,7 +172,8 @@ function render(){
             
             // 정확한 음 계산
             const idx = (stringRoots[s-1]+f)%12;
-            n.dataset.n = noteNames[idx];
+            n.dataset.n1 = noteNames[idx];
+            n.dataset.n2 = altNames[noteNames[idx]] || "";
             n.dataset.s = s; 
             n.dataset.f = f;
             n.onclick = ()=>check(n);
@@ -168,24 +207,24 @@ function check(n){
     if(parseInt(n.dataset.f)>12 || n.classList.contains('correct')) return;
     if(mode!=='ALL' && parseInt(n.dataset.s)!==targetStr) return;
 
-    if(n.dataset.n===target){
+    if(matchesTarget(n)){
         n.classList.add('correct'); n.innerText = target;
         found++; updateStatus();
         if(found>=total) setTimeout(()=> mode === 'SEQ' ? nextSeqStep() : newQuiz(), 700);
     }else{
-        n.classList.add('wrong'); n.innerText = n.dataset.n;
+        n.classList.add('wrong'); n.innerText = n.dataset.n1;
         setTimeout(()=>{ n.classList.remove('wrong'); n.innerText = ""; }, 450);
     }
 }
 
 function newQuiz(){
     document.querySelectorAll('.node').forEach(n=>{ n.classList.remove('correct', 'wrong'); n.innerText = ""; });
-    let pool = useAcc ? noteNames : noteNames.filter(n=>!n.includes('#'));
+    let pool = getNotePool();
     target = pool[Math.floor(Math.random()*pool.length)];
 
     if(mode==='ALL'){
         targetStr = -1;
-        total = Array.from(document.querySelectorAll('.node')).filter(n=> parseInt(n.dataset.f)<=12 && n.dataset.n===target ).length;
+        total = Array.from(document.querySelectorAll('.node')).filter(n=> parseInt(n.dataset.f)<=12 && matchesTarget(n) ).length;
     }else if(mode==='SEQ'){
         seqPhase = 0; seqIndex = 0;
         targetStr = seqOrders[seqPhase][seqIndex];
@@ -202,7 +241,7 @@ function newQuiz(){
 }
 
 function countOnString(stringNum){
-    return Array.from(document.querySelectorAll('.node')).filter(n=> parseInt(n.dataset.s)===stringNum && parseInt(n.dataset.f)<=12 && n.dataset.n===target ).length;
+    return Array.from(document.querySelectorAll('.node')).filter(n=> parseInt(n.dataset.s)===stringNum && parseInt(n.dataset.f)<=12 && matchesTarget(n) ).length;
 }
 
 function nextSeqStep(){
@@ -238,7 +277,6 @@ function setM(m){
     updateBoardScale(); updateStringVisibility(); newQuiz();
 }
 
-function toggleAcc(){ useAcc = !useAcc; newQuiz(); }
 
 document.querySelectorAll('.strsel').forEach(btn=>{
     btn.onclick = ()=>{
@@ -261,7 +299,7 @@ function toggleAllStrings(v){
 
 function fixViewport(){ document.body.style.height = window.innerHeight + 'px'; }
 window.addEventListener('resize', ()=>{ fixViewport(); updateBoardScale(); });
-fixViewport(); updateBoardScale(); render();
+fixViewport(); updateBoardScale(); updateNoteTypeButtons(); render();
 </script>
 </body>
 </html>
