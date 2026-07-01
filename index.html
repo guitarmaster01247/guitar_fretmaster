@@ -24,7 +24,7 @@
         .status-msg { text-align: center; font-weight: bold; color: #555; height: 25px; }
 
         .fretboard-wrap { overflow-x: auto; background: #1a1a1a; padding: 50px 0; border-radius: 15px; position: relative; }
-        .fretboard { position: relative; display: flex; width: 1500px; height: 240px; background: var(--wood); border-top: 5px solid #444; border-bottom: 5px solid #444; margin: 0 auto; }
+        .fretboard { position: relative; display: flex; width: 1500px; height: 240px; background: var(--wood); border-top: 5px solid #444; border-bottom: 5px solid #444; margin: 0 auto; overflow:visible; }
         
         /* 줄 레이어 z-index 1로 고정 */
         .string-layer { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
@@ -54,10 +54,13 @@
 
         /* 음표시 레이어 z-index 10으로 올려서 줄(z-index 1) 위로 덮음 */
         .node { position: absolute; width: 42px; height: 42px; border-radius: 50%; transform: translate(-50%, -50%); cursor: pointer; z-index: 10; display: flex; align-items: center; justify-content: center; font-weight: bold; color: transparent; }
-        .node.correct { background: #27ae60 !important; color: white !important; box-shadow: 0 0 15px #27ae60; }
-        .node.wrong { background: #e74c3c !important; color: white !important; }
+        .node.correct { background: #27ae60 !important; color: white !important; animation: popCorrect 0.22s ease; }
+        .node.wrong { background: #e74c3c !important; color: white !important; animation: shakeWrong 0.25s ease; }
+        @keyframes popCorrect { 0% { transform: translate(-50%, -50%) scale(0.82); } 70% { transform: translate(-50%, -50%) scale(1.18); } 100% { transform: translate(-50%, -50%) scale(1); } }
+        @keyframes shakeWrong { 0%,100% { transform: translate(-50%, -50%); } 25% { transform: translate(calc(-50% - 5px), -50%); } 75% { transform: translate(calc(-50% + 5px), -50%); } }
         .node.dimmed { opacity: 0.05; pointer-events: none; }
-        .fret-num { position: absolute; top: -35px; width: 100%; text-align: center; color: #aaa; font-weight: bold; }
+        .fret-num { position: absolute; top: -35px; width: 100%; text-align: center; color: #aaa; font-weight: bold; font-size: 0.9rem; letter-spacing: .02em; z-index: 12; pointer-events: none; transition: opacity .18s ease, transform .18s ease; }
+        .fretboard.hide-fret-nums .fret-num { opacity: 0; transform: translateY(-5px); }
     </style>
 </head>
 <body>
@@ -83,6 +86,7 @@
                 <button id="acc-sharp" class="btn" onclick="toggleNoteType('sharp')">#</button>
                 <button id="acc-flat" class="btn" onclick="toggleNoteType('flat')">b</button>
             </div>
+            <button id="fret-num-btn" class="btn active" onclick="toggleFretNumbers()">프렛번호 ON</button>
             <div id="str-ctrl" style="display:none; align-items:center; gap:15px;">
                 <span id="bulk-ctrl">
                     <button class="btn" style="border-color:#ccc; color:#666;" onclick="allStrings(true)">전체선택</button>
@@ -128,6 +132,14 @@
         document.getElementById('acc-flat').classList.toggle('active', noteTypeEnabled.flat);
     }
 
+    function getNoteTypeLabel() {
+        const labels = [];
+        if(noteTypeEnabled.natural) labels.push('기본');
+        if(noteTypeEnabled.sharp) labels.push('#');
+        if(noteTypeEnabled.flat) labels.push('b');
+        return labels.join(' + ');
+    }
+
     function toggleNoteType(type) {
         const enabledCount = Object.values(noteTypeEnabled).filter(Boolean).length;
         if(noteTypeEnabled[type] && enabledCount === 1) return; // 최소 하나는 항상 켜두기
@@ -139,12 +151,29 @@
     function matchesTarget(n) {
         return n.dataset.n1 === targetNote || n.dataset.n2 === targetNote;
     }
+
+    function updateFretNumberVisibility() {
+        const board = document.getElementById('fretboard');
+        const btn = document.getElementById('fret-num-btn');
+        if(board) board.classList.toggle('hide-fret-nums', !showFretNumbers);
+        if(btn) {
+            btn.classList.toggle('active', showFretNumbers);
+            btn.innerText = showFretNumbers ? '프렛번호 ON' : '프렛번호 OFF';
+        }
+    }
+
+    function toggleFretNumbers() {
+        showFretNumbers = !showFretNumbers;
+        updateFretNumberVisibility();
+    }
+
     
     // 정확한 표준 튜닝 (1번줄부터 6번줄 순서: E, B, G, D, A, E)
     // 0:E, 7:B, 3:G, 10:D, 5:A, 0:E
     const stringRoots = [0, 7, 3, 10, 5, 0]; 
     
     let currentMode = 'ALL';
+    let showFretNumbers = true;
     let noteTypeEnabled = { natural: true, sharp: false, flat: false };
     let activeOne = 1, activeMulti = [true, true, true, true, true, true];
     let targetNote = "", targetStrNum = -1, foundCount = 0, totalToFind = 0;
@@ -164,6 +193,7 @@
             btnBox.appendChild(b);
         }
         updateNoteTypeButtons();
+        updateFretNumberVisibility();
         renderBoard();
     }
 
@@ -200,6 +230,7 @@
             }
             board.appendChild(fd);
         }
+        updateFretNumberVisibility();
         updateUI(); newQuiz();
     }
 
@@ -315,11 +346,12 @@
     }
 
     function updateScore() {
+        const range = `출제: ${getNoteTypeLabel()}`;
         if(currentMode === 'SEQ') {
             const step = seqPhase * 6 + seqIndex + 1;
-            document.getElementById('status').innerText = `단계 ${step}/12 · 남은 개수: ${totalToFind - foundCount}`;
+            document.getElementById('status').innerText = `${range} · 단계 ${step}/12 · 남은 개수: ${totalToFind - foundCount}`;
         } else {
-            document.getElementById('status').innerText = `남은 개수: ${totalToFind - foundCount}`;
+            document.getElementById('status').innerText = `${range} · 남은 개수: ${totalToFind - foundCount}`;
         }
     }
     function allStrings(v) { activeMulti = activeMulti.map(()=>v); updateUI(); newQuiz(); }
