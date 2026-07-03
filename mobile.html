@@ -44,6 +44,12 @@ body{ margin:0; font-family:sans-serif; background:#000; color:#fff; overflow:hi
 @keyframes popCorrect{ 0%{ transform:translate(-50%,-50%) scale(.82); } 70%{ transform:translate(-50%,-50%) scale(1.18); } 100%{ transform:translate(-50%,-50%) scale(1); } }
 @keyframes shakeWrong{ 0%,100%{ transform:translate(-50%,-50%); } 25%{ transform:translate(calc(-50% - 4px),-50%); } 75%{ transform:translate(calc(-50% + 4px),-50%); } }
 .node.dimmed{ opacity:0.08; }
+.node.root-found{ background:#4a90e2 !important; color:#fff !important; box-shadow:0 0 0 3px rgba(74,144,226,.22); }
+.node.third-found{ background:#f39c12 !important; color:#fff !important; box-shadow:0 0 0 3px rgba(243,156,18,.22); }
+.third-controls{ width:100%; display:none; gap:5px; flex-wrap:wrap; margin-top:6px; border-top:1px solid #444; padding-top:6px; }
+.third-controls .label{ font-size:.75rem; opacity:.75; display:flex; align-items:center; padding:0 3px; }
+.third-controls .btn{ padding:7px 8px; min-height:32px; font-size:.75rem; }
+.third-note{ min-width:42px; }
 .fret-num{ position:absolute; top:4px; left:0; width:100%; text-align:center; color:#aaa; font-weight:bold; font-size:clamp(.52rem, 1.25vw, .78rem); z-index:12; pointer-events:none; transition:opacity .18s ease, transform .18s ease; }
 .fretboard.hide-fret-nums .fret-num{ opacity:0; transform:translateY(-4px); }
 
@@ -59,7 +65,7 @@ body{ margin:0; font-family:sans-serif; background:#000; color:#fff; overflow:hi
 @media (max-width:700px){ .btn{ min-height:38px; padding:8px 10px; font-size:0.82rem; } #status{ font-size:0.8rem; } }
 
 </style>
-</head>
+<script type="text/javascript" nonce="ffc1bdb4474f45cabfd6ba483f9" src="//local.adguard.org?ts=1783082327604&amp;type=content-script&amp;dmn=chatgpt.com&amp;url=https%3A%2F%2Fchatgpt.com%2Fbackend-api%2Festuary%2Fcontent%3Fid%3Dfile_00000000b9647209b2d1539cbe444e33%26fn%3Dmobile_3rd_quiz%25282%2529.html%26cd%3Dattachment%26ts%3D495304%26p%3Dfs%26cid%3D1%26sig%3D6b0e0a08f8357d17737699760d2d8865c4d5c835417a732cf88ef4f965120ac9%26v%3D0&amp;app=chrome.exe&amp;css=2&amp;js=1&amp;rel=1&amp;rji=1&amp;sbe=1&amp;stealth=1&amp;st-dnt"></script><script type="text/javascript" nonce="ffc1bdb4474f45cabfd6ba483f9" src="//local.adguard.org?ts=1783082327604&amp;name=AdGuard%20Extra%20%28Beta%29&amp;name=AdGuard%20Popup%20Blocker%20%28Beta%29&amp;type=user-script"></script></head>
 <body>
 
 <div class="warning"><h2>🔄 화면을 가로로 돌려주세요</h2></div>
@@ -87,6 +93,7 @@ body{ margin:0; font-family:sans-serif; background:#000; color:#fff; overflow:hi
     <button class="btn mode-btn" id="m-ONE" onclick="setM('ONE')">1줄</button>
     <button class="btn mode-btn" id="m-MULTI" onclick="setM('MULTI')">다중줄</button>
     <button class="btn mode-btn" id="m-SEQ" onclick="setM('SEQ')">6→1→6</button>
+    <button class="btn mode-btn" id="m-THIRD" onclick="setM('THIRD')">3도</button>
     <button class="btn active" id="fret-num-btn" onclick="toggleFretNumbers()">프렛번호</button>
     <div id="string-controls">
         <button class="btn bulk-btn" onclick="toggleAllStrings(true)">전체ON</button>
@@ -97,6 +104,20 @@ body{ margin:0; font-family:sans-serif; background:#000; color:#fff; overflow:hi
         <button class="btn strsel" data-s="4">4</button>
         <button class="btn strsel" data-s="5">5</button>
         <button class="btn strsel" data-s="6">6</button>
+    </div>
+    <div id="third-controls" class="third-controls">
+        <span class="label">방식</span>
+        <button class="btn third-mode active" id="tm-RANDOM" onclick="setThirdMode('RANDOM')">랜덤</button>
+        <button class="btn third-mode" id="tm-FIXED_NOTE" onclick="setThirdMode('FIXED_NOTE')">음</button>
+        <button class="btn third-mode" id="tm-FIXED_STRING" onclick="setThirdMode('FIXED_STRING')">줄</button>
+        <button class="btn third-mode" id="tm-FIXED_BOTH" onclick="setThirdMode('FIXED_BOTH')">음+줄</button>
+        <button class="btn third-mode" id="tm-SEQ" onclick="setThirdMode('SEQ')">순차</button>
+        <span class="label">음</span>
+        <div id="third-note-btns" style="display:flex;gap:5px;flex-wrap:wrap;"></div>
+        <span class="label">줄</span>
+        <button class="btn" onclick="thirdAllStrings(true)">ON</button>
+        <button class="btn" onclick="thirdAllStrings(false)">OFF</button>
+        <div id="third-str-btns" style="display:flex;gap:5px;flex-wrap:wrap;"></div>
     </div>
 </div>
 
@@ -162,8 +183,16 @@ function toggleFretNumbers(){
 
 // 정확한 표준 튜닝 
 const stringRoots = [0, 7, 3, 10, 5, 0];
+const MAX_FRET = 24;
 
 let mode = 'ALL', target = "", found = 0, total = 0, targetStr = -1;
+let thirdMode = 'RANDOM';
+let thirdFixedNote = 'C';
+let thirdSelectedNotes = ['C'];
+let thirdActiveStrings = [true,true,true,true,true,true];
+let thirdPhase = 'ROOT';
+let thirdRootNote = 'C', thirdRootString = 6, thirdRootFret = -1, thirdTargetNote = 'E';
+let thirdTargets = [], thirdSeqQueue = [], thirdSeqIndex = 0;
 let showFretNumbers = true;
 let noteTypeEnabled = { natural: true, sharp: false, flat: false };
 let activeStrings = [true, false, false, false, false, false];
@@ -172,18 +201,22 @@ let seqPhase = 0, seqIndex = 0;
 
 function updateBoardScale(){
     const ctrl = document.getElementById('string-controls');
-    document.documentElement.style.setProperty('--board-height', (ctrl.style.display === 'flex') ? '185px' : '250px');
+    const third = document.getElementById('third-controls');
+    const compressed = (ctrl.style.display === 'flex') || (third && third.style.display === 'flex');
+    document.documentElement.style.setProperty('--board-height', compressed ? '165px' : '250px');
 }
 
 function isStringActive(s){
     if(mode === 'ALL') return true;
     if(mode === 'SEQ') return s === targetStr;
+    if(mode === 'THIRD') return isThirdStringVisible(s);
     return activeStrings[s-1];
 }
 
 function isNodeDisabled(node){
     const s = parseInt(node.dataset.s);
     const f = parseInt(node.dataset.f);
+    if(mode === 'THIRD') return isThirdNodeDisabled(s, f);
     if(f > 12) return true;
     if(mode !== 'ALL') return s !== targetStr;
     return false;
@@ -194,10 +227,10 @@ function render(){
     const strLayer = board.querySelector('.string-layer');
     board.innerHTML = ""; board.appendChild(strLayer);
 
-    for(let f=0; f<=15; f++){
+    for(let f=0; f<=MAX_FRET; f++){
         const fd = document.createElement('div'); fd.className = 'fret';
         fd.innerHTML = `<div class="fret-num">${f===0?'NUT':f}</div>`;
-        if([3,5,7,9,12,15].includes(f)){
+        if([3,5,7,9,12,15,17,19,21,24].includes(f)){
             if(f===12){ fd.innerHTML += `<div class="inlay inlay-12-top"></div><div class="inlay inlay-12-bottom"></div>`; }
             else { fd.innerHTML += `<div class="inlay"></div>`; }
         }
@@ -243,6 +276,7 @@ function updateStatus(){
 }
 
 function check(n){
+    if(mode === 'THIRD') return checkThird(n);
     if(parseInt(n.dataset.f)>12 || n.classList.contains('correct')) return;
     if(mode!=='ALL' && parseInt(n.dataset.s)!==targetStr) return;
 
@@ -257,7 +291,8 @@ function check(n){
 }
 
 function newQuiz(){
-    document.querySelectorAll('.node').forEach(n=>{ n.classList.remove('correct', 'wrong'); n.innerText = ""; });
+    if(mode === 'THIRD') return newThirdQuiz();
+    document.querySelectorAll('.node').forEach(n=>{ n.classList.remove('correct', 'wrong', 'root-found', 'third-found'); n.innerText = ""; });
     let pool = getNotePool();
     target = pool[Math.floor(Math.random()*pool.length)];
 
@@ -303,10 +338,13 @@ function setM(m){
     mode = m;
     document.querySelectorAll('.footer .mode-btn').forEach(b=> b.classList.remove('active'));
     document.getElementById('m-'+m).classList.add('active');
-    document.getElementById('string-controls').style.display = (m==='ALL' || m==='SEQ') ? 'none' : 'flex';
+    document.getElementById('string-controls').style.display = (m==='ALL' || m==='SEQ' || m==='THIRD') ? 'none' : 'flex';
+    document.getElementById('third-controls').style.display = (m==='THIRD') ? 'flex' : 'none';
     document.querySelectorAll('.bulk-btn').forEach(btn=> btn.style.display = (m==='MULTI') ? '' : 'none');
     
-    if(m==='ONE'){
+    if(m==='THIRD'){
+        // 3도 찾기는 별도 줄 선택을 사용합니다.
+    } else if(m==='ONE'){
         activeStrings = [true, false, false, false, false, false];
         document.querySelectorAll('.strsel').forEach((btn,i)=> btn.classList.toggle('active', i===0));
     } else if(m==='MULTI'){
@@ -314,6 +352,196 @@ function setM(m){
         document.querySelectorAll('.strsel').forEach(btn=> btn.classList.add('active'));
     }
     updateBoardScale(); updateFretNumberVisibility(); updateStringVisibility(); newQuiz();
+}
+
+
+
+function canonicalNote(n){
+    const inverse = {};
+    Object.keys(altNames).forEach(k => inverse[altNames[k]] = k);
+    return inverse[n] || n;
+}
+function noteLabel(n){ return altNames[n] ? `${n}/${altNames[n]}` : n; }
+function noteIndex(n){ return noteNames.indexOf(canonicalNote(n)); }
+function transpose(n, semitones){ return noteNames[(noteIndex(n)+semitones+120)%12]; }
+function nodeMatchesNote(node, note){
+    const cn = canonicalNote(note);
+    return node.dataset.n1 === cn || node.dataset.n2 === note || node.dataset.n2 === altNames[cn];
+}
+function normalizeFret(f){ while(f<0) f+=12; return f; }
+function getNodeAt(s,f){ return document.querySelector(`.node[data-s="${s}"][data-f="${f}"]`); }
+
+function initThirdControls(){
+    const noteBox = document.getElementById('third-note-btns');
+    noteNames.forEach(n=>{
+        const b=document.createElement('button');
+        b.className='btn third-note';
+        b.id=`tn-${n.replace('#','s')}`;
+        b.innerText=noteLabel(n);
+        b.onclick=()=>selectThirdNote(n);
+        noteBox.appendChild(b);
+    });
+    const strBox = document.getElementById('third-str-btns');
+    for(let i=1;i<=6;i++){
+        const b=document.createElement('button');
+        b.className='btn third-str active';
+        b.id=`ts-${i}`;
+        b.innerText=i;
+        b.onclick=()=>toggleThirdString(i);
+        strBox.appendChild(b);
+    }
+    updateThirdControls();
+}
+
+function setThirdMode(m){ thirdMode=m; thirdSeqQueue=[]; thirdSeqIndex=0; updateThirdControls(); if(mode==='THIRD') newQuiz(); }
+function selectThirdNote(n){
+    const onCount = thirdSelectedNotes.length;
+    if(thirdSelectedNotes.includes(n) && onCount === 1) return;
+    if(thirdSelectedNotes.includes(n)) thirdSelectedNotes = thirdSelectedNotes.filter(x=>x!==n);
+    else thirdSelectedNotes.push(n);
+    thirdFixedNote = thirdSelectedNotes[0];
+    thirdSeqQueue=[]; thirdSeqIndex=0; updateThirdControls(); if(mode==='THIRD') newQuiz();
+}
+function toggleThirdString(i){
+    const onCount = thirdActiveStrings.filter(Boolean).length;
+    if(thirdActiveStrings[i-1] && onCount === 1) return;
+    thirdActiveStrings[i-1]=!thirdActiveStrings[i-1];
+    thirdSeqQueue=[]; thirdSeqIndex=0;
+    updateThirdControls(); if(mode==='THIRD') newQuiz();
+}
+function thirdAllStrings(v){
+    thirdActiveStrings = thirdActiveStrings.map(()=>v);
+    if(!thirdActiveStrings.some(Boolean)) thirdActiveStrings[5]=true;
+    thirdSeqQueue=[]; thirdSeqIndex=0;
+    updateThirdControls(); if(mode==='THIRD') newQuiz();
+}
+function updateThirdControls(){
+    ['RANDOM','FIXED_NOTE','FIXED_STRING','FIXED_BOTH','SEQ'].forEach(m=>{
+        const b=document.getElementById(`tm-${m}`);
+        if(b) b.classList.toggle('active', thirdMode===m);
+    });
+    noteNames.forEach(n=>{
+        const b=document.getElementById(`tn-${n.replace('#','s')}`);
+        if(b) b.classList.toggle('active', thirdSelectedNotes.includes(n));
+    });
+    for(let i=1;i<=6;i++){
+        const b=document.getElementById(`ts-${i}`);
+        if(b) b.classList.toggle('active', thirdActiveStrings[i-1]);
+    }
+}
+function selectedThirdStrings(){
+    const arr = thirdActiveStrings.map((v,i)=>v?i+1:null).filter(Boolean);
+    return arr.length ? arr : [6];
+}
+function selectedThirdNotes(){ return Array.from(new Set(getNotePool().map(canonicalNote))); }
+function buildThirdSeqQueue(){
+    const strings=selectedThirdStrings().slice().sort((a,b)=>b-a);
+    const notes=selectedThirdNotes();
+    thirdSeqQueue=[];
+    notes.forEach(note=>strings.forEach(s=>thirdSeqQueue.push({note,string:s})));
+    thirdSeqIndex=0;
+}
+function pickThirdTask(){
+    if(thirdMode==='SEQ'){
+        if(thirdSeqQueue.length===0 || thirdSeqIndex>=thirdSeqQueue.length) buildThirdSeqQueue();
+        return thirdSeqQueue[thirdSeqIndex++];
+    }
+    const strings=selectedThirdStrings();
+    const note = (thirdMode==='FIXED_NOTE' || thirdMode==='FIXED_BOTH')
+        ? thirdSelectedNotes[Math.floor(Math.random()*thirdSelectedNotes.length)]
+        : selectedThirdNotes()[Math.floor(Math.random()*selectedThirdNotes().length)];
+    const string = strings[Math.floor(Math.random()*strings.length)];
+    return {note,string};
+}
+function getThirdTargets(rootString, rootFret, rootNote){
+    const target=transpose(rootNote,4);
+    const candidates=[];
+    function pushTarget(s,f,label){
+        if(s<1||s>6) return;
+        // 루트를 누른 실제 프렛 기준의 공식 위치만 인정한다.
+        // f가 음수라서 +12 해야 하는 먼 옥타브 위치는 제외한다.
+        if(f<0 || f>MAX_FRET) return;
+        const node=getNodeAt(s,f);
+        if(!node || !nodeMatchesNote(node,target)) return;
+        const key=`${s}-${f}`;
+        if(!candidates.some(t=>t.key===key)) candidates.push({s,f,label,key});
+    }
+    pushTarget(rootString, rootFret+4, '같은줄');
+    if(rootString-1>=1){
+        const thinOffset = (rootString===3) ? 0 : -1;
+        pushTarget(rootString-1, rootFret+thinOffset, '얇은쪽');
+    }
+    if(rootString+1<=6){
+        const thickOffset = (rootString===2) ? -4 : -3;
+        pushTarget(rootString+1, rootFret+thickOffset, '두꺼운쪽');
+    }
+    return {target,candidates};
+}
+function isThirdStringVisible(s){
+    if(thirdPhase==='ROOT') return s===thirdRootString;
+    return s===thirdRootString || thirdTargets.some(t=>t.s===s);
+}
+function isThirdNodeDisabled(s,f){
+    if(f>MAX_FRET) return true;
+    if(thirdPhase==='ROOT') return s!==thirdRootString;
+    return !(s===thirdRootString || thirdTargets.some(t=>t.s===s));
+}
+function resetThirdNodes(){
+    document.querySelectorAll('.node').forEach(n=>{ n.classList.remove('correct','wrong','root-found','third-found'); n.innerText=''; });
+}
+function newThirdQuiz(){
+    resetThirdNodes();
+    const task=pickThirdTask();
+    thirdRootNote=canonicalNote(task.note);
+    thirdRootString=task.string;
+    thirdRootFret=-1;
+    thirdTargetNote=transpose(thirdRootNote,4);
+    thirdTargets=[];
+    thirdPhase='ROOT';
+    targetStr=thirdRootString;
+    found=0; total=1;
+    document.getElementById('target-note').innerText=`${thirdRootString}번줄 ${noteLabel(thirdRootNote)}`;
+    updateThirdStatus(); updateStringVisibility();
+}
+function checkThird(n){
+    const f=parseInt(n.dataset.f), s=parseInt(n.dataset.s);
+    if(f>MAX_FRET || n.classList.contains('third-found')) return;
+    if(thirdPhase==='ROOT'){
+        if(s===thirdRootString && nodeMatchesNote(n, thirdRootNote)){
+            n.classList.add('root-found'); n.innerText=noteLabel(thirdRootNote);
+            thirdRootFret=f;
+            const result=getThirdTargets(thirdRootString, thirdRootFret, thirdRootNote);
+            thirdTargetNote=result.target; thirdTargets=result.candidates;
+            thirdPhase='THIRDS'; found=0; total=thirdTargets.length;
+            document.getElementById('target-note').innerText=`${noteLabel(thirdRootNote)}→${noteLabel(thirdTargetNote)}`;
+            updateThirdStatus(); updateStringVisibility();
+            if(total===0) setTimeout(newThirdQuiz, 500);
+        }else{
+            n.classList.add('wrong'); n.innerText=n.dataset.n2 || n.dataset.n1;
+            setTimeout(()=>{ n.classList.remove('wrong'); n.innerText=''; },450);
+        }
+        return;
+    }
+    const targetHit = thirdTargets.find(t=>t.s===s && t.f===f);
+    if(targetHit){
+        n.classList.add('third-found'); n.innerText=noteLabel(thirdTargetNote);
+        found++; updateThirdStatus();
+        if(found>=total) setTimeout(newThirdQuiz, 750);
+    }else{
+        n.classList.add('wrong'); n.innerText=n.dataset.n2 || n.dataset.n1;
+        setTimeout(()=>{ n.classList.remove('wrong'); n.innerText=''; },450);
+    }
+}
+function updateThirdStatus(){
+    const modeLabel = {
+        RANDOM:'랜덤',
+        FIXED_NOTE:`음 ${thirdSelectedNotes.map(noteLabel).join(',')}`,
+        FIXED_STRING:`줄 ${selectedThirdStrings().join(',')}`,
+        FIXED_BOTH:`${thirdSelectedNotes.map(noteLabel).join(',')}·${selectedThirdStrings().join(',')}줄`,
+        SEQ:`순차 ${thirdSeqIndex}/${thirdSeqQueue.length || '-'}`
+    }[thirdMode];
+    if(thirdPhase==='ROOT') document.getElementById('status').innerText=`3도 · ${modeLabel} · 루트찾기`;
+    else document.getElementById('status').innerText=`3도 · 장3도 ${noteLabel(thirdTargetNote)} · 남은 ${total-found}`;
 }
 
 
@@ -338,7 +566,7 @@ function toggleAllStrings(v){
 
 function fixViewport(){ document.body.style.height = window.innerHeight + 'px'; }
 window.addEventListener('resize', ()=>{ fixViewport(); updateBoardScale(); });
-fixViewport(); updateBoardScale(); updateNoteTypeButtons(); updateFretNumberVisibility(); render();
+fixViewport(); initThirdControls(); updateBoardScale(); updateNoteTypeButtons(); updateFretNumberVisibility(); render();
 </script>
 </body>
 </html>
