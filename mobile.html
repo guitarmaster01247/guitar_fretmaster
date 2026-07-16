@@ -46,10 +46,18 @@ body{ margin:0; font-family:sans-serif; background:#000; color:#fff; overflow:hi
 .node.dimmed{ opacity:0.08; }
 .node.root-found{ background:#4a90e2 !important; color:#fff !important; box-shadow:0 0 0 3px rgba(74,144,226,.22); }
 .node.third-found{ background:#f39c12 !important; color:#fff !important; box-shadow:0 0 0 3px rgba(243,156,18,.22); }
-.third-controls{ width:100%; display:none; gap:5px; flex-wrap:wrap; margin-top:6px; border-top:1px solid #444; padding-top:6px; }
-.third-controls .label{ font-size:.75rem; opacity:.75; display:flex; align-items:center; padding:0 3px; }
+.third-controls{ width:100%; display:none; gap:6px; flex-direction:column; margin-top:6px; border-top:1px solid #444; padding-top:6px; }
+.third-primary{ display:flex; gap:5px; align-items:center; flex-wrap:wrap; }
+.third-controls .label{ font-size:.72rem; opacity:.72; display:flex; align-items:center; padding:0 3px; }
 .third-controls .btn{ padding:7px 8px; min-height:32px; font-size:.75rem; }
 .third-note{ min-width:42px; }
+.third-more{ width:100%; border:1px solid #444; border-radius:8px; overflow:hidden; }
+.third-more summary{ list-style:none; cursor:pointer; padding:8px 10px; font-size:.76rem; font-weight:bold; background:#2b2b2b; display:flex; justify-content:space-between; }
+.third-more summary::-webkit-details-marker{ display:none; }
+.third-more summary::after{ content:'열기 ▾'; opacity:.65; }
+.third-more[open] summary::after{ content:'닫기 ▴'; }
+.third-more-body{ display:flex; gap:6px; flex-direction:column; padding:7px; }
+.third-setting-row{ display:flex; gap:5px; flex-wrap:wrap; align-items:center; }
 .fret-num{ position:absolute; top:4px; left:0; width:100%; text-align:center; color:#aaa; font-weight:bold; font-size:clamp(.52rem, 1.25vw, .78rem); z-index:12; pointer-events:none; transition:opacity .18s ease, transform .18s ease; }
 .fretboard.hide-fret-nums .fret-num{ opacity:0; transform:translateY(-4px); }
 
@@ -65,7 +73,7 @@ body{ margin:0; font-family:sans-serif; background:#000; color:#fff; overflow:hi
 @media (max-width:700px){ .btn{ min-height:38px; padding:8px 10px; font-size:0.82rem; } #status{ font-size:0.8rem; } }
 
 </style>
-<script type="text/javascript" nonce="ffc1bdb4474f45cabfd6ba483f9" src="//local.adguard.org?ts=1783082327604&amp;type=content-script&amp;dmn=chatgpt.com&amp;url=https%3A%2F%2Fchatgpt.com%2Fbackend-api%2Festuary%2Fcontent%3Fid%3Dfile_00000000b9647209b2d1539cbe444e33%26fn%3Dmobile_3rd_quiz%25282%2529.html%26cd%3Dattachment%26ts%3D495304%26p%3Dfs%26cid%3D1%26sig%3D6b0e0a08f8357d17737699760d2d8865c4d5c835417a732cf88ef4f965120ac9%26v%3D0&amp;app=chrome.exe&amp;css=2&amp;js=1&amp;rel=1&amp;rji=1&amp;sbe=1&amp;stealth=1&amp;st-dnt"></script><script type="text/javascript" nonce="ffc1bdb4474f45cabfd6ba483f9" src="//local.adguard.org?ts=1783082327604&amp;name=AdGuard%20Extra%20%28Beta%29&amp;name=AdGuard%20Popup%20Blocker%20%28Beta%29&amp;type=user-script"></script></head>
+<script type="text/javascript" nonce="ecaba6d9eabb4d3bb16fa7e9bb3" src="//local.adguard.org?ts=1784186890757&amp;type=content-script&amp;dmn=chatgpt.com&amp;url=https%3A%2F%2Fchatgpt.com%2Fbackend-api%2Festuary%2Fcontent%3Fid%3Dfile_00000000c6cc720680359ca83511d936%26fn%3Dmobile%252810%2529%25283%2529.html%26cd%3Dattachment%26ts%3D495608%26p%3Dfs%26cid%3D1%26sig%3Dd5af576c7da4e28aa1fa2424a5d62a22afe3a7535c0dd88d77dd0bce86e1972f%26v%3D0&amp;app=chrome.exe&amp;css=2&amp;js=1&amp;rel=1&amp;rji=1&amp;sbe=1"></script><script type="text/javascript" nonce="ecaba6d9eabb4d3bb16fa7e9bb3" src="//local.adguard.org?ts=1784186890757&amp;name=AdGuard%20Extra&amp;name=AdGuard%20Popup%20Blocker&amp;type=user-script"></script><script type="text/javascript" nonce="ffc1bdb4474f45cabfd6ba483f9" src="//local.adguard.org?ts=1783082327604&amp;type=content-script&amp;dmn=chatgpt.com&amp;url=https%3A%2F%2Fchatgpt.com%2Fbackend-api%2Festuary%2Fcontent%3Fid%3Dfile_00000000b9647209b2d1539cbe444e33%26fn%3Dmobile_3rd_quiz%25282%2529.html%26cd%3Dattachment%26ts%3D495304%26p%3Dfs%26cid%3D1%26sig%3D6b0e0a08f8357d17737699760d2d8865c4d5c835417a732cf88ef4f965120ac9%26v%3D0&amp;app=chrome.exe&amp;css=2&amp;js=1&amp;rel=1&amp;rji=1&amp;sbe=1&amp;stealth=1&amp;st-dnt"></script><script type="text/javascript" nonce="ffc1bdb4474f45cabfd6ba483f9" src="//local.adguard.org?ts=1783082327604&amp;name=AdGuard%20Extra%20%28Beta%29&amp;name=AdGuard%20Popup%20Blocker%20%28Beta%29&amp;type=user-script"></script></head>
 <body>
 
 <div class="warning"><h2>🔄 화면을 가로로 돌려주세요</h2></div>
@@ -106,18 +114,32 @@ body{ margin:0; font-family:sans-serif; background:#000; color:#fff; overflow:hi
         <button class="btn strsel" data-s="6">6</button>
     </div>
     <div id="third-controls" class="third-controls">
-        <span class="label">방식</span>
-        <button class="btn third-mode active" id="tm-RANDOM" onclick="setThirdMode('RANDOM')">랜덤</button>
-        <button class="btn third-mode" id="tm-FIXED_NOTE" onclick="setThirdMode('FIXED_NOTE')">음</button>
-        <button class="btn third-mode" id="tm-FIXED_STRING" onclick="setThirdMode('FIXED_STRING')">줄</button>
-        <button class="btn third-mode" id="tm-FIXED_BOTH" onclick="setThirdMode('FIXED_BOTH')">음+줄</button>
-        <button class="btn third-mode" id="tm-SEQ" onclick="setThirdMode('SEQ')">순차</button>
-        <span class="label">음</span>
-        <div id="third-note-btns" style="display:flex;gap:5px;flex-wrap:wrap;"></div>
-        <span class="label">줄</span>
-        <button class="btn" onclick="thirdAllStrings(true)">ON</button>
-        <button class="btn" onclick="thirdAllStrings(false)">OFF</button>
-        <div id="third-str-btns" style="display:flex;gap:5px;flex-wrap:wrap;"></div>
+        <div class="third-primary">
+            <span class="label">종류</span>
+            <button class="btn third-quality active" id="tq-MAJOR" onclick="setThirdQuality('MAJOR')">메이저 3도</button>
+            <button class="btn third-quality" id="tq-MINOR" onclick="setThirdQuality('MINOR')">마이너 3도</button>
+            <span class="label">방식</span>
+            <button class="btn third-mode active" id="tm-RANDOM" onclick="setThirdMode('RANDOM')">랜덤</button>
+            <button class="btn third-mode" id="tm-FIXED_NOTE" onclick="setThirdMode('FIXED_NOTE')">음</button>
+            <button class="btn third-mode" id="tm-FIXED_STRING" onclick="setThirdMode('FIXED_STRING')">줄</button>
+            <button class="btn third-mode" id="tm-FIXED_BOTH" onclick="setThirdMode('FIXED_BOTH')">음+줄</button>
+            <button class="btn third-mode" id="tm-SEQ" onclick="setThirdMode('SEQ')">순차</button>
+        </div>
+        <details id="third-more" class="third-more">
+            <summary>출제 범위 설정</summary>
+            <div class="third-more-body">
+                <div class="third-setting-row">
+                    <span class="label">루트 음</span>
+                    <div id="third-note-btns" style="display:flex;gap:5px;flex-wrap:wrap;"></div>
+                </div>
+                <div class="third-setting-row">
+                    <span class="label">출제 줄</span>
+                    <button class="btn" onclick="thirdAllStrings(true)">전체ON</button>
+                    <button class="btn" onclick="thirdAllStrings(false)">전체OFF</button>
+                    <div id="third-str-btns" style="display:flex;gap:5px;flex-wrap:wrap;"></div>
+                </div>
+            </div>
+        </details>
     </div>
 </div>
 
@@ -187,6 +209,7 @@ const MAX_FRET = 24;
 
 let mode = 'ALL', target = "", found = 0, total = 0, targetStr = -1;
 let thirdMode = 'RANDOM';
+let thirdQuality = 'MAJOR';
 let thirdFixedNote = 'C';
 let thirdSelectedNotes = ['C'];
 let thirdActiveStrings = [true,true,true,true,true,true];
@@ -393,7 +416,13 @@ function initThirdControls(){
     updateThirdControls();
 }
 
-function setThirdMode(m){ thirdMode=m; thirdSeqQueue=[]; thirdSeqIndex=0; updateThirdControls(); if(mode==='THIRD') newQuiz(); }
+function setThirdQuality(q){ thirdQuality=q; updateThirdControls(); if(mode==='THIRD') newQuiz(); }
+function setThirdMode(m){
+    thirdMode=m;
+    const more=document.getElementById('third-more');
+    if(more && m!=='RANDOM') more.open=true;
+    thirdSeqQueue=[]; thirdSeqIndex=0; updateThirdControls(); if(mode==='THIRD') newQuiz();
+}
 function selectThirdNote(n){
     const onCount = thirdSelectedNotes.length;
     if(thirdSelectedNotes.includes(n) && onCount === 1) return;
@@ -416,6 +445,10 @@ function thirdAllStrings(v){
     updateThirdControls(); if(mode==='THIRD') newQuiz();
 }
 function updateThirdControls(){
+    ['MAJOR','MINOR'].forEach(q=>{
+        const b=document.getElementById(`tq-${q}`);
+        if(b) b.classList.toggle('active', thirdQuality===q);
+    });
     ['RANDOM','FIXED_NOTE','FIXED_STRING','FIXED_BOTH','SEQ'].forEach(m=>{
         const b=document.getElementById(`tm-${m}`);
         if(b) b.classList.toggle('active', thirdMode===m);
@@ -454,7 +487,9 @@ function pickThirdTask(){
     return {note,string};
 }
 function getThirdTargets(rootString, rootFret, rootNote){
-    const target=transpose(rootNote,4);
+    const semitones = thirdQuality==='MINOR' ? 3 : 4;
+    const target=transpose(rootNote,semitones);
+    const fretShift = thirdQuality==='MINOR' ? -1 : 0;
     const candidates=[];
     function pushTarget(s,f,label){
         if(s<1||s>6) return;
@@ -466,14 +501,14 @@ function getThirdTargets(rootString, rootFret, rootNote){
         const key=`${s}-${f}`;
         if(!candidates.some(t=>t.key===key)) candidates.push({s,f,label,key});
     }
-    pushTarget(rootString, rootFret+4, '같은줄');
+    pushTarget(rootString, rootFret+4+fretShift, '같은줄');
     if(rootString-1>=1){
         const thinOffset = (rootString===3) ? 0 : -1;
-        pushTarget(rootString-1, rootFret+thinOffset, '얇은쪽');
+        pushTarget(rootString-1, rootFret+thinOffset+fretShift, '얇은쪽');
     }
     if(rootString+1<=6){
         const thickOffset = (rootString===2) ? -4 : -3;
-        pushTarget(rootString+1, rootFret+thickOffset, '두꺼운쪽');
+        pushTarget(rootString+1, rootFret+thickOffset+fretShift, '두꺼운쪽');
     }
     return {target,candidates};
 }
@@ -495,7 +530,7 @@ function newThirdQuiz(){
     thirdRootNote=canonicalNote(task.note);
     thirdRootString=task.string;
     thirdRootFret=-1;
-    thirdTargetNote=transpose(thirdRootNote,4);
+    thirdTargetNote=transpose(thirdRootNote, thirdQuality==='MINOR' ? 3 : 4);
     thirdTargets=[];
     thirdPhase='ROOT';
     targetStr=thirdRootString;
@@ -513,7 +548,8 @@ function checkThird(n){
             const result=getThirdTargets(thirdRootString, thirdRootFret, thirdRootNote);
             thirdTargetNote=result.target; thirdTargets=result.candidates;
             thirdPhase='THIRDS'; found=0; total=thirdTargets.length;
-            document.getElementById('target-note').innerText=`${noteLabel(thirdRootNote)}→${noteLabel(thirdTargetNote)}`;
+            const qualityLabel = thirdQuality==='MINOR' ? '마이너 3도' : '메이저 3도';
+            document.getElementById('target-note').innerText=`${noteLabel(thirdRootNote)}→${qualityLabel} ${noteLabel(thirdTargetNote)}`;
             updateThirdStatus(); updateStringVisibility();
             if(total===0) setTimeout(newThirdQuiz, 500);
         }else{
@@ -540,8 +576,9 @@ function updateThirdStatus(){
         FIXED_BOTH:`${thirdSelectedNotes.map(noteLabel).join(',')}·${selectedThirdStrings().join(',')}줄`,
         SEQ:`순차 ${thirdSeqIndex}/${thirdSeqQueue.length || '-'}`
     }[thirdMode];
-    if(thirdPhase==='ROOT') document.getElementById('status').innerText=`3도 · ${modeLabel} · 루트찾기`;
-    else document.getElementById('status').innerText=`3도 · 장3도 ${noteLabel(thirdTargetNote)} · 남은 ${total-found}`;
+    const qualityLabel = thirdQuality==='MINOR' ? '마이너 3도' : '메이저 3도';
+    if(thirdPhase==='ROOT') document.getElementById('status').innerText=`${qualityLabel} · ${modeLabel} · 루트찾기`;
+    else document.getElementById('status').innerText=`${qualityLabel} ${noteLabel(thirdTargetNote)} · 남은 ${total-found}`;
 }
 
 

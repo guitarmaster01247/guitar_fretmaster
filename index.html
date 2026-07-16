@@ -63,15 +63,24 @@
         .node.third-found { background: #f39c12 !important; color: white !important; box-shadow: 0 0 0 4px rgba(243,156,18,.18); }
         .third-panel { display:none; margin-top:18px; padding-top:18px; border-top:1px solid #e6eaf0; }
         .third-panel.show { display:block; }
-        .third-row { display:flex; gap:12px; flex-wrap:wrap; align-items:center; margin-top:10px; }
+        .third-main-grid { display:grid; grid-template-columns:auto 1fr; gap:14px 24px; align-items:center; }
+        .third-section-title { font-size:.82rem; font-weight:800; color:#6b7280; white-space:nowrap; }
+        .third-row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:10px; }
+        .third-main-grid .third-row { margin-top:0; }
         .third-note-btn { min-width:52px; padding:8px 10px; border-radius:14px; }
-        .third-help { color:#777; font-size:.9rem; line-height:1.45; margin-top:10px; }
+        .third-advanced { margin-top:16px; border:1px solid #e1e6ed; border-radius:14px; background:#fff; overflow:hidden; }
+        .third-advanced summary { cursor:pointer; list-style:none; padding:13px 16px; font-weight:800; color:#46505c; display:flex; justify-content:space-between; align-items:center; }
+        .third-advanced summary::-webkit-details-marker { display:none; }
+        .third-advanced summary::after { content:'펼치기 ▾'; font-size:.78rem; color:#8a94a1; }
+        .third-advanced[open] summary::after { content:'접기 ▴'; }
+        .third-advanced-body { padding:4px 16px 16px; border-top:1px solid #edf0f4; }
+        .third-help { color:#777; font-size:.88rem; line-height:1.45; margin-top:12px; padding:10px 12px; background:#f6f8fa; border-radius:10px; }
         .third-root-text { color:#4a90e2; }
         .third-target-text { color:#f39c12; }
         .fret-num { position: absolute; top: -35px; width: 100%; text-align: center; color: #aaa; font-weight: bold; font-size: 0.9rem; letter-spacing: .02em; z-index: 12; pointer-events: none; transition: opacity .18s ease, transform .18s ease; }
         .fretboard.hide-fret-nums .fret-num { opacity: 0; transform: translateY(-5px); }
     </style>
-<script type="text/javascript" nonce="ffc1bdb4474f45cabfd6ba483f9" src="//local.adguard.org?ts=1783082327604&amp;type=content-script&amp;dmn=chatgpt.com&amp;url=https%3A%2F%2Fchatgpt.com%2Fbackend-api%2Festuary%2Fcontent%3Fid%3Dfile_000000008730720995221bae24bc64c8%26fn%3Dindex_3rd_quiz%25282%2529.html%26cd%3Dattachment%26ts%3D495304%26p%3Dfs%26cid%3D1%26sig%3D66269bb38f81425319eb296684fbf18acf4cf6c324c216e3d6b086bd375e8e19%26v%3D0&amp;app=chrome.exe&amp;css=2&amp;js=1&amp;rel=1&amp;rji=1&amp;sbe=1&amp;stealth=1&amp;st-dnt"></script><script type="text/javascript" nonce="ffc1bdb4474f45cabfd6ba483f9" src="//local.adguard.org?ts=1783082327604&amp;name=AdGuard%20Extra%20%28Beta%29&amp;name=AdGuard%20Popup%20Blocker%20%28Beta%29&amp;type=user-script"></script></head>
+<script type="text/javascript" nonce="ecaba6d9eabb4d3bb16fa7e9bb3" src="//local.adguard.org?ts=1784186890757&amp;type=content-script&amp;dmn=chatgpt.com&amp;url=https%3A%2F%2Fchatgpt.com%2Fbackend-api%2Festuary%2Fcontent%3Fid%3Dfile_00000000c58872069638bceead883493%26fn%3Dindex%252810%2529%25283%2529.html%26cd%3Dattachment%26ts%3D495608%26p%3Dfs%26cid%3D1%26sig%3Df7e0c5b135de8cadaa051d9e2152f0ca3a297770afe09c900133debbf7d7e391%26v%3D0&amp;app=chrome.exe&amp;css=2&amp;js=1&amp;rel=1&amp;rji=1&amp;sbe=1"></script><script type="text/javascript" nonce="ecaba6d9eabb4d3bb16fa7e9bb3" src="//local.adguard.org?ts=1784186890757&amp;name=AdGuard%20Extra&amp;name=AdGuard%20Popup%20Blocker&amp;type=user-script"></script><script type="text/javascript" nonce="ffc1bdb4474f45cabfd6ba483f9" src="//local.adguard.org?ts=1783082327604&amp;type=content-script&amp;dmn=chatgpt.com&amp;url=https%3A%2F%2Fchatgpt.com%2Fbackend-api%2Festuary%2Fcontent%3Fid%3Dfile_000000008730720995221bae24bc64c8%26fn%3Dindex_3rd_quiz%25282%2529.html%26cd%3Dattachment%26ts%3D495304%26p%3Dfs%26cid%3D1%26sig%3D66269bb38f81425319eb296684fbf18acf4cf6c324c216e3d6b086bd375e8e19%26v%3D0&amp;app=chrome.exe&amp;css=2&amp;js=1&amp;rel=1&amp;rji=1&amp;sbe=1&amp;stealth=1&amp;st-dnt"></script><script type="text/javascript" nonce="ffc1bdb4474f45cabfd6ba483f9" src="//local.adguard.org?ts=1783082327604&amp;name=AdGuard%20Extra%20%28Beta%29&amp;name=AdGuard%20Popup%20Blocker%20%28Beta%29&amp;type=user-script"></script></head>
 <body>
 
 <div class="container">
@@ -107,27 +116,37 @@
         </div>
 
         <div id="third-panel" class="third-panel">
-            <div class="third-row">
-                <span class="acc-label">3도 퀴즈 방식</span>
-                <button id="third-mode-RANDOM" class="btn active" onclick="setThirdMode('RANDOM')">랜덤</button>
-                <button id="third-mode-FIXED_NOTE" class="btn" onclick="setThirdMode('FIXED_NOTE')">정해진 음</button>
-                <button id="third-mode-FIXED_STRING" class="btn" onclick="setThirdMode('FIXED_STRING')">정해진 줄</button>
-                <button id="third-mode-FIXED_BOTH" class="btn" onclick="setThirdMode('FIXED_BOTH')">음 + 줄</button>
-                <button id="third-mode-SEQ" class="btn" onclick="setThirdMode('SEQ')">순차 전부</button>
+            <div class="third-main-grid">
+                <span class="third-section-title">① 3도 종류</span>
+                <div class="third-row">
+                    <button id="third-quality-MAJOR" class="btn active" onclick="setThirdQuality('MAJOR')">메이저 3도</button>
+                    <button id="third-quality-MINOR" class="btn" onclick="setThirdQuality('MINOR')">마이너 3도</button>
+                </div>
+                <span class="third-section-title">② 연습 방식</span>
+                <div class="third-row">
+                    <button id="third-mode-RANDOM" class="btn active" onclick="setThirdMode('RANDOM')">랜덤</button>
+                    <button id="third-mode-FIXED_NOTE" class="btn" onclick="setThirdMode('FIXED_NOTE')">음 고정</button>
+                    <button id="third-mode-FIXED_STRING" class="btn" onclick="setThirdMode('FIXED_STRING')">줄 고정</button>
+                    <button id="third-mode-FIXED_BOTH" class="btn" onclick="setThirdMode('FIXED_BOTH')">음 + 줄 고정</button>
+                    <button id="third-mode-SEQ" class="btn" onclick="setThirdMode('SEQ')">순차 전부</button>
+                </div>
             </div>
-            <div class="third-row">
-                <span class="acc-label">루트 음</span>
-                <div id="third-note-btns" class="third-row" style="margin-top:0;"></div>
-            </div>
-            <div class="third-row">
-                <span class="acc-label">출제 줄</span>
-                <button class="btn" style="border-color:#ccc; color:#666;" onclick="thirdAllStrings(true)">전체선택</button>
-                <button class="btn" style="border-color:#ccc; color:#666;" onclick="thirdAllStrings(false)">전체해제</button>
-                <div id="third-str-btns" class="third-row" style="margin-top:0;"></div>
-            </div>
-            <div class="third-help">
-                1단계: 제시된 줄에서 루트음을 직접 찾습니다. 2단계: 그 루트 기준 장3도 음을 동일줄, 한 줄 위/두꺼운 쪽, 한 줄 아래/얇은 쪽에서 찾습니다. 6번줄과 1번줄은 없는 방향을 자동 제외합니다.
-            </div>
+            <details id="third-advanced" class="third-advanced">
+                <summary>③ 출제 범위 설정</summary>
+                <div class="third-advanced-body">
+                    <div class="third-row">
+                        <span class="acc-label">루트 음</span>
+                        <div id="third-note-btns" class="third-row" style="margin-top:0;"></div>
+                    </div>
+                    <div class="third-row">
+                        <span class="acc-label">출제 줄</span>
+                        <button class="btn" style="border-color:#ccc; color:#666;" onclick="thirdAllStrings(true)">전체선택</button>
+                        <button class="btn" style="border-color:#ccc; color:#666;" onclick="thirdAllStrings(false)">전체해제</button>
+                        <div id="third-str-btns" class="third-row" style="margin-top:0;"></div>
+                    </div>
+                </div>
+            </details>
+            <div class="third-help">제시된 줄에서 루트를 찾은 뒤, 선택한 메이저 3도 또는 마이너 3도를 같은 줄과 인접 줄의 가능한 위치에서 찾습니다.</div>
         </div>
     </div>
 
@@ -209,6 +228,7 @@
     
     let currentMode = 'ALL';
     let thirdMode = 'RANDOM';
+    let thirdQuality = 'MAJOR';
     let thirdFixedNote = 'C';
     let thirdSelectedNotes = ['C'];
     let thirdActiveStrings = [true, true, true, true, true, true];
@@ -455,8 +475,16 @@
         updateThirdControls();
     }
 
+    function setThirdQuality(q) {
+        thirdQuality = q;
+        updateThirdControls();
+        if(currentMode === 'THIRD') newQuiz();
+    }
+
     function setThirdMode(m) {
         thirdMode = m;
+        const advanced = document.getElementById('third-advanced');
+        if(advanced && m !== 'RANDOM') advanced.open = true;
         thirdSeqQueue = [];
         thirdSeqIndex = 0;
         updateThirdControls();
@@ -498,6 +526,10 @@
     }
 
     function updateThirdControls() {
+        ['MAJOR','MINOR'].forEach(q => {
+            const b = document.getElementById(`third-quality-${q}`);
+            if(b) b.classList.toggle('active', thirdQuality === q);
+        });
         ['RANDOM','FIXED_NOTE','FIXED_STRING','FIXED_BOTH','SEQ'].forEach(m => {
             const b = document.getElementById(`third-mode-${m}`);
             if(b) b.classList.toggle('active', thirdMode === m);
@@ -553,7 +585,9 @@
     }
 
     function getThirdTargets(rootString, rootFret, rootNote) {
-        const target = transpose(rootNote, 4);
+        const semitones = thirdQuality === 'MINOR' ? 3 : 4;
+        const target = transpose(rootNote, semitones);
+        const fretShift = thirdQuality === 'MINOR' ? -1 : 0;
         const candidates = [];
 
         function pushTarget(s, f, label) {
@@ -567,16 +601,16 @@
             if(!candidates.some(t => t.key === key)) candidates.push({ s, f, label, key });
         }
 
-        pushTarget(rootString, rootFret + 4, '같은 줄');
+        pushTarget(rootString, rootFret + 4 + fretShift, '같은 줄');
 
         if(rootString - 1 >= 1) {
             const thinOffset = (rootString === 3) ? 0 : -1; // 3번줄 → 2번줄 예외
-            pushTarget(rootString - 1, rootFret + thinOffset, '한 줄 아래/얇은 쪽');
+            pushTarget(rootString - 1, rootFret + thinOffset + fretShift, '한 줄 아래/얇은 쪽');
         }
 
         if(rootString + 1 <= 6) {
             const thickOffset = (rootString === 2) ? -4 : -3; // 2번줄 → 3번줄 예외
-            pushTarget(rootString + 1, rootFret + thickOffset, '한 줄 위/두꺼운 쪽');
+            pushTarget(rootString + 1, rootFret + thickOffset + fretShift, '한 줄 위/두꺼운 쪽');
         }
 
         return { target, candidates };
@@ -610,7 +644,7 @@
         thirdRootNote = canonicalNote(task.note);
         thirdRootString = task.string;
         thirdRootFret = -1;
-        thirdTargetNote = transpose(thirdRootNote, 4);
+        thirdTargetNote = transpose(thirdRootNote, thirdQuality === 'MINOR' ? 3 : 4);
         thirdTargets = [];
         thirdPhase = 'ROOT';
         targetStrNum = thirdRootString;
@@ -641,8 +675,9 @@
                 foundCount = 0;
                 totalToFind = thirdTargets.length;
 
-                document.getElementById('target-desc').innerHTML = `<span class="third-target-text">2단계</span> · ${noteLabel(thirdRootNote)} 기준 장3도 ${noteLabel(thirdTargetNote)}를 동일줄/위줄/아래줄 중 잡을 수 있는 공식 위치만 찾으세요`;
-                document.getElementById('target-note').innerText = `${noteLabel(thirdRootNote)} → 장3도 ${noteLabel(thirdTargetNote)}`;
+                const qualityLabel = thirdQuality === 'MINOR' ? '마이너 3도' : '메이저 3도';
+                document.getElementById('target-desc').innerHTML = `<span class="third-target-text">2단계</span> · ${noteLabel(thirdRootNote)} 기준 ${qualityLabel} ${noteLabel(thirdTargetNote)}를 동일줄/위줄/아래줄 중 잡을 수 있는 공식 위치만 찾으세요`;
+                document.getElementById('target-note').innerText = `${noteLabel(thirdRootNote)} → ${qualityLabel} ${noteLabel(thirdTargetNote)}`;
                 updateThirdStatus();
                 updateUI();
 
@@ -680,11 +715,12 @@
             SEQ: `순차 ${thirdSeqIndex}/${thirdSeqQueue.length || '-'}`
         }[thirdMode];
 
+        const qualityLabel = thirdQuality === 'MINOR' ? '마이너 3도' : '메이저 3도';
         if(thirdPhase === 'ROOT') {
-            document.getElementById('status').innerText = `3도 찾기 · ${modeLabel} · 루트 찾기`;
+            document.getElementById('status').innerText = `${qualityLabel} 찾기 · ${modeLabel} · 루트 찾기`;
         } else {
             const labels = thirdTargets.map(t => t.label).join(' / ');
-            document.getElementById('status').innerText = `3도 찾기 · 남은 ${totalToFind - foundCount} · ${labels}`;
+            document.getElementById('status').innerText = `${qualityLabel} 찾기 · 남은 ${totalToFind - foundCount} · ${labels}`;
         }
     }
 
