@@ -46,8 +46,9 @@
         .string.dimmed { opacity: 0.1; }
 
         /* fret의 z-index를 아예 제거하여 자식(node)이 컨텍스트에 갇히지 않게 함 */
-        .fret { flex: 1; border-right: 4px solid var(--fret); position: relative; }
-        .fret:first-child { border-right: 12px solid #ddd; flex: 0.5; } 
+        /* 실제 기타의 12평균율 간격처럼 고프렛으로 갈수록 폭이 좁아집니다. */
+        .fret { flex: 0 0 auto; width: var(--fret-width); box-sizing: border-box; border-right: 4px solid var(--fret); position: relative; }
+        .fret:first-child { border-right: 12px solid #ddd; } 
         .inlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 20px; height: 20px; background: var(--dot); border-radius: 50%; opacity: 0.8; box-shadow: 0 0 10px #fff; }
         .inlay-12-top { transform: translate(-50%, -180%); }
         .inlay-12-bottom { transform: translate(-50%, 80%); }
@@ -76,11 +77,50 @@
         .third-advanced-body { padding:4px 16px 16px; border-top:1px solid #edf0f4; }
         .third-help { color:#777; font-size:.88rem; line-height:1.45; margin-top:12px; padding:10px 12px; background:#f6f8fa; border-radius:10px; }
         .third-root-text { color:#4a90e2; }
+        .penta-panel { display:none; margin-top:18px; padding-top:18px; border-top:1px solid #e6eaf0; }
+        .penta-panel.show { display:block; }
+        .penta-toolbar { display:flex; flex-wrap:wrap; gap:10px 16px; align-items:center; }
+        .penta-control { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+        .penta-control-label { font-size:.82rem; font-weight:800; color:#6b7280; white-space:nowrap; }
+        .penta-select { min-height:40px; padding:7px 32px 7px 12px; border:2px solid #d7dde5; border-radius:12px; background:#fff; color:#344050; font-weight:800; cursor:pointer; }
+        .penta-practice { margin-top:12px; display:flex; gap:8px 12px; flex-wrap:wrap; align-items:center; }
+        .penta-position { display:inline-flex; align-items:center; gap:6px; padding:4px; border:1px solid #e1e6ed; border-radius:14px; background:#fff; }
+        .penta-keep.active { background:#16a085; border-color:#16a085; color:#fff; }
+        .penta-progress { margin-top:10px; display:flex; gap:7px; flex-wrap:wrap; align-items:center; min-height:30px; }
+        .penta-step { padding:6px 10px; border-radius:999px; background:#e9edf2; color:#737d88; font-size:.78rem; font-weight:900; }
+        .penta-step.current { background:#2c3e50; color:#fff; box-shadow:0 0 0 3px rgba(44,62,80,.12); }
+        .penta-step.done { background:#d8f3eb; color:#08755f; }
+        .penta-feedback { min-height:24px; margin-top:7px; font-size:.88rem; font-weight:900; color:#68727e; }
+        .penta-feedback.correct { color:#16835f; }
+        .penta-feedback.wrong { color:#c0392b; }
+        .penta-position .btn { min-width:42px; padding:7px 12px; }
+        .penta-position-label { min-width:72px; text-align:center; font-weight:900; color:#344050; }
+        .penta-preview.active { background:#8e44ad; border-color:#8e44ad; color:#fff; }
+        .penta-hint-btn.active { background:#f39c12; border-color:#f39c12; color:#fff; }
+        .penta-hint-box { display:none; margin-top:9px; padding:10px 12px; border-radius:10px; background:#fff7e6; border:1px solid #f5d89c; color:#6d531e; font-size:.88rem; font-weight:800; line-height:1.5; }
+        .penta-hint-box.show { display:block; }
+        .node.penta-found { background:#8e44ad !important; color:#fff !important; box-shadow:0 0 0 4px rgba(142,68,173,.18); }
+        .node.penta-root { background:#2980b9 !important; color:#fff !important; box-shadow:0 0 0 4px rgba(41,128,185,.22); }
+        .node.penta-preview-note { background:rgba(142,68,173,.78) !important; color:#fff !important; box-shadow:0 0 0 3px rgba(142,68,173,.12); }
+        .node.penta-preview-note.penta-root { background:#2980b9 !important; }
+        .node.penta-hint-note { color:#fff !important; box-shadow:0 0 0 4px #f1c40f, 0 0 18px rgba(241,196,15,.9) !important; animation:pentaHintPulse .9s ease-in-out infinite alternate; }
+        @keyframes pentaHintPulse { from { transform:translate(-50%,-50%) scale(.95); } to { transform:translate(-50%,-50%) scale(1.13); } }
+        .node.penta-clickable { box-shadow:inset 0 0 0 2px rgba(255,255,255,.08); }
+        .node.penta-clickable:hover { background:rgba(74,144,226,.28); color:#fff; transform:translate(-50%,-50%) scale(1.1); box-shadow:0 0 0 4px rgba(74,144,226,.2); }
+        .node.penta-clickable:active { transform:translate(-50%,-50%) scale(.92); }
+        .string.current-string { opacity:1 !important; box-shadow:0 0 7px rgba(74,144,226,.95), 0 1px 4px rgba(0,0,0,.9); }
+        .penta-help { margin-top:12px; padding:12px 14px; background:#f6f8fa; border-radius:12px; color:#56606c; line-height:1.55; }
+        .penta-help strong { color:#2c3e50; }
+        .penta-guide-line { margin-top:4px; font-size:.9rem; }
+        .penta-legend { display:inline-flex; gap:12px; margin-top:6px; font-size:.82rem; }
+        .penta-dot { display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:5px; vertical-align:-1px; }
+        .penta-dot.root { background:#2980b9; }
+        .penta-dot.scale { background:#8e44ad; }
         .third-target-text { color:#f39c12; }
         .fret-num { position: absolute; top: -35px; width: 100%; text-align: center; color: #aaa; font-weight: bold; font-size: 0.9rem; letter-spacing: .02em; z-index: 12; pointer-events: none; transition: opacity .18s ease, transform .18s ease; }
         .fretboard.hide-fret-nums .fret-num { opacity: 0; transform: translateY(-5px); }
     </style>
-<script type="text/javascript" nonce="ecaba6d9eabb4d3bb16fa7e9bb3" src="//local.adguard.org?ts=1784186890757&amp;type=content-script&amp;dmn=chatgpt.com&amp;url=https%3A%2F%2Fchatgpt.com%2Fbackend-api%2Festuary%2Fcontent%3Fid%3Dfile_00000000c58872069638bceead883493%26fn%3Dindex%252810%2529%25283%2529.html%26cd%3Dattachment%26ts%3D495608%26p%3Dfs%26cid%3D1%26sig%3Df7e0c5b135de8cadaa051d9e2152f0ca3a297770afe09c900133debbf7d7e391%26v%3D0&amp;app=chrome.exe&amp;css=2&amp;js=1&amp;rel=1&amp;rji=1&amp;sbe=1"></script><script type="text/javascript" nonce="ecaba6d9eabb4d3bb16fa7e9bb3" src="//local.adguard.org?ts=1784186890757&amp;name=AdGuard%20Extra&amp;name=AdGuard%20Popup%20Blocker&amp;type=user-script"></script><script type="text/javascript" nonce="ffc1bdb4474f45cabfd6ba483f9" src="//local.adguard.org?ts=1783082327604&amp;type=content-script&amp;dmn=chatgpt.com&amp;url=https%3A%2F%2Fchatgpt.com%2Fbackend-api%2Festuary%2Fcontent%3Fid%3Dfile_000000008730720995221bae24bc64c8%26fn%3Dindex_3rd_quiz%25282%2529.html%26cd%3Dattachment%26ts%3D495304%26p%3Dfs%26cid%3D1%26sig%3D66269bb38f81425319eb296684fbf18acf4cf6c324c216e3d6b086bd375e8e19%26v%3D0&amp;app=chrome.exe&amp;css=2&amp;js=1&amp;rel=1&amp;rji=1&amp;sbe=1&amp;stealth=1&amp;st-dnt"></script><script type="text/javascript" nonce="ffc1bdb4474f45cabfd6ba483f9" src="//local.adguard.org?ts=1783082327604&amp;name=AdGuard%20Extra%20%28Beta%29&amp;name=AdGuard%20Popup%20Blocker%20%28Beta%29&amp;type=user-script"></script></head>
+<script type="text/javascript" nonce="dacacaf0cccb4d7d99a53122c98" src="//local.adguard.org?ts=1785066142011&amp;type=content-script&amp;dmn=chatgpt.com&amp;url=https%3A%2F%2Fchatgpt.com%2Fbackend-api%2Festuary%2Fcontent%3Fid%3Dfile_00000000b8bc820695b1feed4b8d7a30%26fn%3Dindex_pentatonic%25283%2529.html%26cd%3Dattachment%26ts%3D495856%26p%3Dfs%26cid%3D1%26sig%3D4da7425e7e5d07197c7961de7a6cd01a61323bd2efa43d989a533c6ac0284f2e%26v%3D0&amp;app=chrome.exe&amp;css=2&amp;js=1&amp;rel=1&amp;rji=1&amp;sbe=1&amp;stealth=1&amp;st-dnt"></script><script type="text/javascript" nonce="dacacaf0cccb4d7d99a53122c98" src="//local.adguard.org?ts=1785066142011&amp;name=AdGuard%20Extra%20%28Beta%29&amp;name=AdGuard%20Popup%20Blocker%20%28Beta%29&amp;type=user-script"></script></head>
 <body>
 
 <div class="container">
@@ -90,12 +130,13 @@
         <button id="tab-MULTI" class="tab" onclick="switchMode('MULTI')">다중 줄 연습</button>
         <button id="tab-SEQ" class="tab" onclick="switchMode('SEQ')">6→1→6 순차</button>
         <button id="tab-THIRD" class="tab" onclick="switchMode('THIRD')">3도 찾기</button>
+        <button id="tab-PENTA" class="tab" onclick="switchMode('PENTA')">펜타토닉</button>
     </div>
 
     <div class="config-panel">
         <div style="display:flex; align-items:center; gap:20px;">
         <div style="margin-left:auto;">
-            <a href="mobile.html" class="btn" style="text-decoration:none; display:inline-flex; align-items:center;">
+            <a href="mobile_pentatonic.html" class="btn" style="text-decoration:none; display:inline-flex; align-items:center;">
                 모바일 버전 열기
             </a>
         </div>
@@ -113,6 +154,42 @@
                 </span>
                 <div id="str-btns"></div>
             </div>
+        </div>
+
+        <div id="penta-panel" class="penta-panel">
+            <div class="penta-toolbar">
+                <div class="penta-control">
+                    <span class="penta-control-label">중심 스케일</span>
+                    <select id="penta-root-select" class="penta-select" onchange="setPentaRoot(this.value)"></select>
+                    <button id="penta-quality-MAJOR" class="btn active" onclick="setPentaQuality('MAJOR')">메이저</button>
+                    <button id="penta-quality-MINOR" class="btn" onclick="setPentaQuality('MINOR')">마이너</button>
+                </div>
+                <div class="penta-control">
+                    <span class="penta-control-label">포지션</span>
+                    <div class="penta-position">
+                        <button class="btn" onclick="changePentaPosition(-1)" aria-label="이전 포지션">◀</button>
+                        <span id="penta-position-label" class="penta-position-label">P1 / 5</span>
+                        <button class="btn" onclick="changePentaPosition(1)" aria-label="다음 포지션">▶</button>
+                    </div>
+                    <button id="penta-preview-btn" class="btn penta-preview" onclick="togglePentaPreview()">모양 보기</button>
+                </div>
+            </div>
+            <div class="penta-practice">
+                <span class="penta-control-label">출제 방식</span>
+                <select id="penta-practice-select" class="penta-select" onchange="setPentaPractice(this.value)">
+                    <option value="GUIDED">초심자 · 6→1번 줄 순서대로</option>
+                    <option value="STRING">줄별 반복 · 6→1</option>
+                    <option value="RANDOM_STRING">랜덤 줄</option>
+                    <option value="FULL">전체 테스트</option>
+                </select>
+                <button id="penta-keep-btn" class="btn penta-keep active" onclick="togglePentaKeepPrevious()">이전 줄 유지 ON</button>
+                <button id="penta-hint-btn" class="btn penta-hint-btn" onclick="togglePentaHint()">힌트 표시</button>
+                <button id="penta-restart-btn" class="btn" onclick="restartPentaQuiz()">처음부터</button>
+            </div>
+            <div id="penta-progress" class="penta-progress" aria-label="펜타토닉 진행 단계"></div>
+            <div id="penta-feedback" class="penta-feedback" aria-live="polite"></div>
+            <div id="penta-hint-box" class="penta-hint-box" aria-live="polite"></div>
+            <div id="penta-help" class="penta-help"></div>
         </div>
 
         <div id="third-panel" class="third-panel">
@@ -225,6 +302,21 @@
     // 0:E, 7:B, 3:G, 10:D, 5:A, 0:E
     const stringRoots = [0, 7, 3, 10, 5, 0];
     const MAX_FRET = 24;
+
+    // 화면상의 전체 지판 폭은 유지하면서 실제 기타의 12평균율 프렛 간격을 적용합니다.
+    // n번째 프렛까지의 거리는 scaleLength * (1 - 2^(-n/12))이므로,
+    // 각 프렛 칸은 이전 칸보다 약 5.6%씩 좁아집니다.
+    const BOARD_PIXEL_WIDTH = 2300;
+    const NUT_SLOT_WIDTH = 70;
+    const FRET_SCALE_PIXEL_LENGTH =
+        (BOARD_PIXEL_WIDTH - NUT_SLOT_WIDTH) / (1 - Math.pow(2, -MAX_FRET / 12));
+
+    function getFretSlotWidth(fret) {
+        if(fret === 0) return NUT_SLOT_WIDTH;
+        return FRET_SCALE_PIXEL_LENGTH * (
+            Math.pow(2, -(fret - 1) / 12) - Math.pow(2, -fret / 12)
+        );
+    }
     
     let currentMode = 'ALL';
     let thirdMode = 'RANDOM';
@@ -236,6 +328,19 @@
     let thirdRootNote = 'C', thirdRootString = 6, thirdRootFret = -1, thirdTargetNote = 'E';
     let thirdTargets = [], thirdSeqQueue = [], thirdSeqIndex = 0;
     let showFretNumbers = true;
+    let pentaQuality = 'MAJOR', pentaRoot = 'E', pentaPosition = 1;
+    let pentaPractice = 'GUIDED', pentaPhase = 'DEGREE', pentaString = 6, pentaPreview = false;
+    let pentaTargets = [], pentaFoundKeys = new Set();
+    let pentaKeepPrevious = true, pentaComplete = false;
+    let pentaStringOrder = [6,5,4,3,2,1], pentaStringIndex = 0;
+    let pentaFeedbackTimer = null, pentaDegreeIndex = 0, pentaGuidedIndex = 0, pentaHintVisible = false;
+    const minorBoxPatterns = {
+        1:[[0,3],[0,2],[0,2],[0,2],[0,3],[0,3]],
+        2:[[3,5],[2,5],[2,5],[2,4],[3,5],[3,5]],
+        3:[[5,7],[5,7],[5,7],[4,7],[5,8],[5,7]],
+        4:[[7,10],[7,10],[7,9],[7,9],[8,10],[7,10]],
+        5:[[10,12],[10,12],[9,12],[9,12],[10,12],[10,12]]
+    };
     let noteTypeEnabled = { natural: true, sharp: false, flat: false };
     let activeOne = 1, activeMulti = [true, true, true, true, true, true];
     let targetNote = "", targetStrNum = -1, foundCount = 0, totalToFind = 0;
@@ -255,6 +360,7 @@
             btnBox.appendChild(b);
         }
         initThirdControls();
+        initPentaControls();
         updateNoteTypeButtons();
         updateFretNumberVisibility();
         renderBoard();
@@ -264,9 +370,12 @@
         const board = document.getElementById('fretboard');
         const strLayer = document.getElementById('string-layer');
         board.innerHTML = ""; board.appendChild(strLayer);
+        board.style.width = `${BOARD_PIXEL_WIDTH}px`;
 
         for(let f=0; f<=MAX_FRET; f++) {
             const fd = document.createElement('div'); fd.className = 'fret';
+            fd.dataset.f = f;
+            fd.style.setProperty('--fret-width', `${getFretSlotWidth(f)}px`);
             fd.innerHTML = `<div class="fret-num">${f===0?'NUT':f}</div>`;
             
             if([3,5,7,9,12,15,17,19,21,24].includes(f)) {
@@ -300,9 +409,10 @@
     function switchMode(m) {
         currentMode = m;
         document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.id === `tab-${m}`));
-        document.getElementById('str-ctrl').style.display = (m === 'ALL' || m === 'SEQ' || m === 'THIRD' ? 'none' : 'flex');
+        document.getElementById('str-ctrl').style.display = (m === 'ALL' || m === 'SEQ' || m === 'THIRD' || m === 'PENTA' ? 'none' : 'flex');
         document.getElementById('bulk-ctrl').style.display = (m === 'MULTI' ? 'inline' : 'none');
         document.getElementById('third-panel').classList.toggle('show', m === 'THIRD');
+        document.getElementById('penta-panel').classList.toggle('show', m === 'PENTA');
         updateUI(); newQuiz();
     }
 
@@ -312,6 +422,10 @@
         if(currentMode === 'MULTI') return activeMulti[i-1];
         if(currentMode === 'SEQ') return targetStrNum === i;
         if(currentMode === 'THIRD') return isThirdStringVisible(i);
+        if(currentMode === 'PENTA') {
+            if(pentaPreview || !isPentaLineMode()) return true;
+            return i === pentaString || (pentaKeepPrevious && completedPentaStrings().includes(i));
+        }
         return true;
     }
 
@@ -319,6 +433,13 @@
         const f = parseInt(n.dataset.f);
         const s = parseInt(n.dataset.s);
         if(currentMode === 'THIRD') return isThirdNodeDisabled(s, f);
+        if(currentMode === 'PENTA') {
+            const win = pentaFretWindow();
+            if(f < win.min || f > win.max) return true;
+            if(pentaPreview) return false;
+            if(pentaComplete) return true;
+            return isPentaLineMode() && s !== pentaString;
+        }
         if(f > 12) return true;
         if(currentMode === 'ONE' || currentMode === 'MULTI' || currentMode === 'SEQ') return s !== targetStrNum;
         return false;
@@ -329,13 +450,24 @@
             const b = document.getElementById(`sbtn-${i}`);
             if(b) b.classList.toggle('active', isStringActive(i));
             const strLine = document.querySelector(`.string.s${i}`);
-            if(strLine) strLine.classList.toggle('dimmed', !isStringActive(i));
+            if(strLine) {
+                strLine.classList.toggle('dimmed', !isStringActive(i));
+                strLine.classList.toggle('current-string', currentMode === 'PENTA' && isPentaLineMode() && i === pentaString && !pentaPreview);
+            }
         }
-        document.querySelectorAll('.node').forEach(n => n.classList.toggle('dimmed', isNodeDisabled(n)));
+        document.querySelectorAll('.node').forEach(n => {
+            const disabled = isNodeDisabled(n);
+            const key = `${n.dataset.s}-${n.dataset.f}`;
+            const retainedFound = currentMode === 'PENTA' && pentaFoundKeys.has(key) && (pentaComplete || (isPentaLineMode() && pentaKeepPrevious));
+            n.classList.toggle('dimmed', disabled && !retainedFound);
+            n.classList.toggle('penta-clickable', currentMode === 'PENTA' && !disabled && !pentaPreview && !pentaFoundKeys.has(key));
+            n.title = currentMode === 'PENTA' && !disabled ? `${n.dataset.s}번 줄 · ${n.dataset.f}프렛` : '';
+        });
     }
 
     function check(n) {
         if(currentMode === 'THIRD') return checkThird(n);
+        if(currentMode === 'PENTA') return checkPenta(n);
         if(parseInt(n.dataset.f) > 12 || n.classList.contains('correct')) return;
         const s = parseInt(n.dataset.s);
         if((currentMode === 'ONE' || currentMode === 'MULTI' || currentMode === 'SEQ') && s !== targetStrNum) return;
@@ -354,6 +486,7 @@
 
     function newQuiz() {
         if(currentMode === 'THIRD') return newThirdQuiz();
+        if(currentMode === 'PENTA') return newPentaQuiz();
         const nodes = document.querySelectorAll('.node');
         nodes.forEach(n => {
             n.classList.remove('correct','wrong'); n.innerText = "";
@@ -415,6 +548,7 @@
 
     function updateScore() {
         if(currentMode === 'THIRD') return updateThirdStatus();
+        if(currentMode === 'PENTA') return updatePentaStatus();
         const range = `출제: ${getNoteTypeLabel()}`;
         if(currentMode === 'SEQ') {
             const step = seqPhase * 6 + seqIndex + 1;
@@ -721,6 +855,515 @@
         } else {
             const labels = thirdTargets.map(t => t.label).join(' / ');
             document.getElementById('status').innerText = `${qualityLabel} 찾기 · 남은 ${totalToFind - foundCount} · ${labels}`;
+        }
+    }
+
+
+    function pentaTargetKey(t) { return `${t.s}-${t.f}`; }
+
+    function pentaDisplayNote(n) {
+        return noteTypeEnabled.flat && !noteTypeEnabled.sharp && altNames[n] ? altNames[n] : n;
+    }
+
+    function pentaDegreeSteps() {
+        return pentaQuality === 'MAJOR'
+            ? [
+                { degree:'1', label:'루트(1도)', semitones:0 },
+                { degree:'2', label:'2도', semitones:2 },
+                { degree:'3', label:'3도', semitones:4 },
+                { degree:'5', label:'5도', semitones:7 },
+                { degree:'6', label:'6도', semitones:9 }
+            ]
+            : [
+                { degree:'1', label:'루트(1도)', semitones:0 },
+                { degree:'♭3', label:'♭3도', semitones:3 },
+                { degree:'4', label:'4도', semitones:5 },
+                { degree:'5', label:'5도', semitones:7 },
+                { degree:'♭7', label:'♭7도', semitones:10 }
+            ];
+    }
+
+    function currentPentaDegreeStep() {
+        const steps = pentaDegreeSteps();
+        return steps[Math.min(pentaDegreeIndex, steps.length - 1)];
+    }
+
+    function pentaGuidedSequence() {
+        return [...pentaTargets].sort((a, b) => (b.s - a.s) || (a.f - b.f));
+    }
+
+    function currentPentaGuidedTarget() {
+        const sequence = pentaGuidedSequence();
+        return sequence[Math.min(pentaGuidedIndex, Math.max(0, sequence.length - 1))] || null;
+    }
+
+    function pentaDegreeLabel(degree) {
+        return pentaDegreeSteps().find(step => step.degree === degree)?.label || `${degree}도`;
+    }
+
+    function pentaFoundCountOnString(stringNum) {
+        return pentaTargets.filter(t => t.s === stringNum && pentaFoundKeys.has(pentaTargetKey(t))).length;
+    }
+
+    function pentaIntervalName(semitones) {
+        return ({0:'같은 음',2:'온음(2프렛)',3:'단3도(3프렛)',4:'장3도(4프렛)',5:'완전4도(5프렛)',7:'완전5도(7프렛)',9:'장6도(9프렛)',10:'단7도(10프렛)'})[semitones] || `${semitones}프렛`;
+    }
+
+    function isPentaLineMode() {
+        return pentaPractice === 'GUIDED' || pentaPractice === 'STRING' || pentaPractice === 'RANDOM_STRING';
+    }
+
+    function completedPentaStrings() {
+        return isPentaLineMode() ? pentaStringOrder.slice(0, pentaStringIndex) : [];
+    }
+
+    function shuffledPentaStrings() {
+        const order = [6,5,4,3,2,1];
+        for(let i = order.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [order[i], order[j]] = [order[j], order[i]];
+        }
+        return order;
+    }
+
+    function initPentaControls() {
+        const select = document.getElementById('penta-root-select');
+        noteNames.forEach(n => {
+            const option = document.createElement('option');
+            option.value = n;
+            option.textContent = noteLabel(n);
+            select.appendChild(option);
+        });
+        updatePentaControls();
+    }
+
+    function resetPentaHint() {
+        pentaHintVisible = false;
+        document.querySelectorAll('.node.penta-hint-note').forEach(n => n.classList.remove('penta-hint-note'));
+        const box = document.getElementById('penta-hint-box');
+        if(box) { box.classList.remove('show'); box.innerHTML = ''; }
+    }
+
+    function setPentaRoot(root) {
+        pentaRoot = root;
+        pentaPreview = false;
+        resetPentaHint();
+        updatePentaControls();
+        if(currentMode === 'PENTA') newPentaQuiz();
+    }
+
+    function setPentaQuality(q) {
+        pentaQuality = q;
+        pentaPreview = false;
+        resetPentaHint();
+        updatePentaControls();
+        if(currentMode === 'PENTA') newPentaQuiz();
+    }
+
+    function setPentaPractice(practice) {
+        pentaPractice = practice;
+        pentaPreview = false;
+        resetPentaHint();
+        updatePentaControls();
+        if(currentMode === 'PENTA') newPentaQuiz();
+    }
+
+    function togglePentaKeepPrevious() {
+        pentaKeepPrevious = !pentaKeepPrevious;
+        updatePentaControls();
+        renderPentaFoundNodes();
+        updatePentaProgress();
+        updateUI();
+    }
+
+    function setPentaPosition(pos) {
+        pentaPosition = Math.max(1, Math.min(5, pos));
+        pentaPreview = false;
+        resetPentaHint();
+        updatePentaControls();
+        if(currentMode === 'PENTA') newPentaQuiz();
+    }
+
+    function changePentaPosition(delta) {
+        const next = ((pentaPosition - 1 + delta + 5) % 5) + 1;
+        setPentaPosition(next);
+    }
+
+    function restartPentaQuiz() {
+        pentaPreview = false;
+        resetPentaHint();
+        updatePentaControls();
+        newPentaQuiz();
+    }
+
+    function togglePentaPreview() {
+        pentaPreview = !pentaPreview;
+        if(pentaPreview) resetPentaHint();
+        updatePentaControls();
+        if(pentaPreview) {
+            showPentaPreview();
+        } else {
+            renderPentaFoundNodes();
+            updatePentaStatus();
+            updatePentaProgress();
+            updateUI();
+        }
+    }
+
+    function togglePentaHint() {
+        if(pentaPractice !== 'GUIDED' || pentaPreview || pentaComplete) return;
+        pentaHintVisible = !pentaHintVisible;
+        renderPentaFoundNodes();
+        if(pentaHintVisible) applyPentaHint();
+        else {
+            const box = document.getElementById('penta-hint-box');
+            if(box) { box.classList.remove('show'); box.innerHTML = ''; }
+            updateUI();
+        }
+        updatePentaControls();
+    }
+
+    function applyPentaHint() {
+        if(!pentaHintVisible || pentaPractice !== 'GUIDED') return;
+        const target = currentPentaGuidedTarget();
+        if(!target) return;
+        const node = document.querySelector(`.node[data-s="${target.s}"][data-f="${target.f}"]`);
+        if(node) node.classList.add('penta-hint-note');
+
+        const step = pentaDegreeSteps().find(x => x.degree === target.degree);
+        const intervalText = step?.semitones === 0
+            ? `선택한 중심음 ${pentaDisplayNote(pentaRoot)} 자체가 루트입니다.`
+            : `${pentaDegreeLabel(target.degree)}는 루트 ${pentaDisplayNote(pentaRoot)}에서 ${pentaIntervalName(step?.semitones ?? 0)} 위의 ${pentaDisplayNote(target.note)}입니다.`;
+        const openNote = noteNames[stringRoots[target.s - 1]];
+        let fretGuide;
+        if(target.f === 0) {
+            fretGuide = `${target.s}번 줄 개방현이 바로 ${pentaDisplayNote(target.note)}입니다.`;
+        } else if(target.f <= 12) {
+            fretGuide = `${target.s}번 줄 개방음 ${pentaDisplayNote(openNote)}에서 오른쪽으로 ${target.f}프렛 이동하면 ${pentaDisplayNote(target.note)}입니다.`;
+        } else {
+            fretGuide = `12프렛은 같은 개방음 ${pentaDisplayNote(openNote)}이 반복되는 자리입니다. 12프렛에서 다시 오른쪽으로 ${target.f - 12}프렛 이동한 ${target.f}프렛을 찾으세요.`;
+        }
+        const box = document.getElementById('penta-hint-box');
+        if(box) {
+            box.innerHTML = `${intervalText}<br>${fretGuide}<br>현재 목표는 <strong>${target.s}번 줄 ${target.f}프렛</strong>이며 노란 테두리로 표시했습니다.`;
+            box.classList.add('show');
+        }
+        updateUI();
+    }
+
+    function updatePentaControls() {
+        const select = document.getElementById('penta-root-select');
+        if(select) select.value = pentaRoot;
+        const practiceSelect = document.getElementById('penta-practice-select');
+        if(practiceSelect) practiceSelect.value = pentaPractice;
+        document.getElementById('penta-quality-MAJOR')?.classList.toggle('active', pentaQuality === 'MAJOR');
+        document.getElementById('penta-quality-MINOR')?.classList.toggle('active', pentaQuality === 'MINOR');
+        const posLabel = document.getElementById('penta-position-label');
+        if(posLabel) posLabel.textContent = `P${pentaPosition} / 5`;
+        const previewBtn = document.getElementById('penta-preview-btn');
+        if(previewBtn) {
+            previewBtn.classList.toggle('active', pentaPreview);
+            previewBtn.textContent = pentaPreview ? '정답 숨기기' : '정답 보기';
+        }
+        const keepBtn = document.getElementById('penta-keep-btn');
+        if(keepBtn) {
+            keepBtn.classList.toggle('active', pentaKeepPrevious);
+            keepBtn.textContent = `이전 줄 유지 ${pentaKeepPrevious ? 'ON' : 'OFF'}`;
+            keepBtn.style.display = pentaPractice === 'FULL' ? 'none' : '';
+        }
+        const hintBtn = document.getElementById('penta-hint-btn');
+        if(hintBtn) {
+            hintBtn.style.display = pentaPractice === 'GUIDED' ? '' : 'none';
+            hintBtn.classList.toggle('active', pentaHintVisible);
+            hintBtn.textContent = pentaHintVisible ? '힌트 숨기기' : '힌트 표시';
+            hintBtn.disabled = pentaPreview || pentaComplete;
+        }
+        const restartBtn = document.getElementById('penta-restart-btn');
+        if(restartBtn) restartBtn.textContent = pentaComplete ? '완료 · 다시하기' : '처음부터';
+    }
+
+    function pentaDegree(note) {
+        const intervals = pentaQuality === 'MAJOR' ? [0,2,4,7,9] : [0,3,5,7,10];
+        const labels = pentaQuality === 'MAJOR' ? ['1','2','3','5','6'] : ['1','♭3','4','5','♭7'];
+        const d = (noteIndex(note) - noteIndex(pentaRoot) + 12) % 12;
+        return labels[intervals.indexOf(d)] || '';
+    }
+
+    function pentaPairInfo() {
+        return pentaQuality === 'MAJOR'
+            ? { other: transpose(pentaRoot, -3), quality: '마이너' }
+            : { other: transpose(pentaRoot, 3), quality: '메이저' };
+    }
+
+    function buildPentaTargets() {
+        const minorRoot = pentaQuality === 'MINOR' ? pentaRoot : transpose(pentaRoot, -3);
+        const anchor = noteIndex(minorRoot);
+        const pattern = minorBoxPatterns[pentaPosition];
+        const out = [];
+        for(let s = 1; s <= 6; s++) {
+            const pair = pattern[6 - s];
+            pair.forEach(off => {
+                let f = anchor + off;
+                while(f > 24) f -= 12;
+                while(f < 0) f += 12;
+                const note = noteNames[(stringRoots[s - 1] + f) % 12];
+                out.push({ s, f, note, degree: pentaDegree(note) });
+            });
+        }
+        return out;
+    }
+
+    function pentaFretWindow() {
+        if(!pentaTargets.length) return { min: 0, max: 24 };
+        const frets = pentaTargets.map(t => t.f);
+        return { min: Math.min(...frets), max: Math.max(...frets) };
+    }
+
+    function currentPentaTargets() {
+        if(pentaPractice === 'GUIDED') {
+            const target = currentPentaGuidedTarget();
+            return target ? [target] : [];
+        }
+        if(isPentaLineMode()) return pentaTargets.filter(t => t.s === pentaString);
+        return pentaTargets;
+    }
+
+    function remainingPentaTargets() {
+        return currentPentaTargets().filter(t => !pentaFoundKeys.has(pentaTargetKey(t)));
+    }
+
+    function resetPentaNodes() {
+        document.querySelectorAll('.node').forEach(n => {
+            n.classList.remove('correct','wrong','root-found','third-found','penta-found','penta-root','penta-preview-note','penta-clickable','penta-hint-note');
+            n.innerText = '';
+            n.title = '';
+        });
+    }
+
+    function shouldShowPentaFound(t) {
+        if(pentaComplete) return true;
+        if(!isPentaLineMode()) return true;
+        if(pentaKeepPrevious) return true;
+        return t.s === pentaString;
+    }
+
+    function renderPentaFoundNodes() {
+        resetPentaNodes();
+        pentaFoundKeys.forEach(key => {
+            const target = pentaTargets.find(t => pentaTargetKey(t) === key);
+            if(!target || !shouldShowPentaFound(target)) return;
+            const node = document.querySelector(`.node[data-s="${target.s}"][data-f="${target.f}"]`);
+            if(!node) return;
+            node.classList.add('penta-found');
+            if(target.degree === '1') node.classList.add('penta-root');
+            node.innerText = target.degree;
+            node.title = `${target.s}번 줄 · ${target.f}프렛 · ${pentaDisplayNote(target.note)} · ${target.degree}도`;
+        });
+        if(pentaHintVisible) applyPentaHint();
+    }
+
+    function setPentaFeedback(text = '', type = '') {
+        const el = document.getElementById('penta-feedback');
+        if(!el) return;
+        clearTimeout(pentaFeedbackTimer);
+        el.textContent = text;
+        el.className = `penta-feedback${type ? ` ${type}` : ''}`;
+        if(text && !pentaComplete) {
+            pentaFeedbackTimer = setTimeout(() => {
+                el.textContent = '';
+                el.className = 'penta-feedback';
+            }, type === 'wrong' ? 1300 : 950);
+        }
+    }
+
+    function updatePentaProgress() {
+        const box = document.getElementById('penta-progress');
+        if(!box) return;
+        const chips = [];
+        if(pentaPractice === 'GUIDED') {
+            const current = currentPentaGuidedTarget();
+            [6,5,4,3,2,1].forEach(s => {
+                const found = pentaFoundCountOnString(s);
+                const total = pentaTargets.filter(t => t.s === s).length;
+                const state = pentaComplete || (total > 0 && found >= total) ? 'done' : (current?.s === s ? 'current' : '');
+                const count = current?.s === s && !pentaComplete ? ` ${found}/${total}` : '';
+                chips.push(`<span class="penta-step ${state}">${s}번${count}</span>`);
+            });
+        } else if(pentaPractice === 'FULL') {
+            chips.push(`<span class="penta-step ${pentaComplete ? 'done' : 'current'}">전체 ${pentaFoundKeys.size}/12</span>`);
+        } else {
+            pentaStringOrder.forEach((s, idx) => {
+                const state = idx < pentaStringIndex || pentaComplete ? 'done' : (idx === pentaStringIndex ? 'current' : '');
+                chips.push(`<span class="penta-step ${state}">${s}번</span>`);
+            });
+        }
+        box.innerHTML = chips.join('');
+    }
+
+    function updatePentaHelp() {
+        const pair = pentaPairInfo();
+        const degreeText = pentaQuality === 'MAJOR' ? '1 · 2 · 3 · 5 · 6' : '1 · ♭3 · 4 · 5 · ♭7';
+        const modeText = {
+            GUIDED: '6번 줄의 낮은 프렛 음부터 한 음씩 안내합니다. 같은 줄의 두 음을 찾으면 5번 줄로 넘어가고, 1번 줄까지 순서대로 완성합니다. 모르면 [힌트 표시]를 누르세요.',
+            STRING: '6번 줄부터 1번 줄까지 줄별로 두 음을 자유로운 순서로 찾습니다.',
+            RANDOM_STRING: '줄 순서를 섞어 각 줄의 두 음을 독립적으로 떠올립니다.',
+            FULL: '줄과 도수 힌트 없이 현재 포지션의 12개 위치를 한 번에 완성합니다.'
+        }[pentaPractice];
+        document.getElementById('penta-help').innerHTML =
+            `<strong>${pentaDisplayNote(pentaRoot)} ${pentaQuality === 'MAJOR' ? '메이저' : '마이너'} 펜타토닉</strong> · 도수 ${degreeText}<br>` +
+            `나란한조: <strong>${pentaDisplayNote(pair.other)} ${pair.quality} 펜타토닉</strong> — 같은 다섯 음과 같은 지판 모양을 공유합니다.` +
+            `<div class="penta-guide-line">${modeText} [이전 줄 유지]가 ON이면 앞에서 찾은 줄이 지판에 계속 남습니다.</div>` +
+            `<span class="penta-legend"><span><i class="penta-dot root"></i>루트 1도</span><span><i class="penta-dot scale"></i>나머지 스케일 음</span></span>`;
+    }
+
+    function newPentaQuiz() {
+        resetPentaNodes();
+        resetPentaHint();
+        pentaTargets = buildPentaTargets();
+        pentaFoundKeys = new Set();
+        pentaComplete = false;
+        pentaPhase = pentaPractice === 'GUIDED' ? 'GUIDED_STRING' : 'STRING';
+        pentaDegreeIndex = 0;
+        pentaGuidedIndex = 0;
+        pentaStringOrder = pentaPractice === 'RANDOM_STRING' ? shuffledPentaStrings() : [6,5,4,3,2,1];
+        pentaStringIndex = 0;
+        const firstGuided = pentaPractice === 'GUIDED' ? currentPentaGuidedTarget() : null;
+        pentaString = firstGuided?.s || pentaStringOrder[0];
+        pentaStringIndex = Math.max(0, pentaStringOrder.indexOf(pentaString));
+        setPentaFeedback('');
+        updatePentaControls();
+        updatePentaHelp();
+        updatePentaProgress();
+        document.getElementById('target-note').innerText = `${pentaDisplayNote(pentaRoot)} ${pentaQuality === 'MAJOR' ? '메이저' : '마이너'} · P${pentaPosition}`;
+        if(pentaPreview) return showPentaPreview();
+        updatePentaStatus();
+        updateUI();
+        focusPentaWindow();
+    }
+
+    function showPentaPreview() {
+        resetPentaNodes();
+        pentaTargets = buildPentaTargets();
+        pentaTargets.forEach(t => {
+            const node = document.querySelector(`.node[data-s="${t.s}"][data-f="${t.f}"]`);
+            if(!node) return;
+            node.classList.add('penta-preview-note');
+            if(t.degree === '1') node.classList.add('penta-root');
+            node.innerText = t.degree;
+            node.title = `${t.s}번 줄 · ${t.f}프렛 · ${pentaDisplayNote(t.note)} · ${t.degree}도`;
+        });
+        document.getElementById('target-desc').innerText = '정답 보기 · 각 도수와 파란 루트 위치를 확인하세요';
+        document.getElementById('status').innerText = '정답 숨기기를 누르면 현재 진행 상태로 돌아갑니다.';
+        setPentaFeedback('정답을 확인 중입니다. 숨겨도 진행 기록은 유지됩니다.');
+        updatePentaHelp();
+        updatePentaProgress();
+        updateUI();
+        focusPentaWindow();
+    }
+
+    function focusPentaWindow() {
+        const wrap = document.querySelector('.fretboard-wrap');
+        const board = document.getElementById('fretboard');
+        if(!wrap || !board || board.scrollWidth <= wrap.clientWidth) return;
+        const win = pentaFretWindow();
+        const firstFret = board.querySelector(`.fret[data-f="${win.min}"]`);
+        const lastFret = board.querySelector(`.fret[data-f="${win.max}"]`);
+        if(!firstFret || !lastFret) return;
+        const centerPx = (firstFret.offsetLeft + lastFret.offsetLeft + lastFret.offsetWidth) / 2;
+        const maxScroll = Math.max(0, board.scrollWidth - wrap.clientWidth);
+        wrap.scrollTo({ left: Math.min(maxScroll, Math.max(0, centerPx - wrap.clientWidth / 2)), behavior: 'smooth' });
+    }
+
+    function checkPenta(n) {
+        if(pentaPreview || pentaComplete || isNodeDisabled(n)) return;
+        const s = parseInt(n.dataset.s), f = parseInt(n.dataset.f);
+        const target = currentPentaTargets().find(t => t.s === s && t.f === f);
+        const key = `${s}-${f}`;
+        if(pentaFoundKeys.has(key)) return;
+        if(target) {
+            pentaFoundKeys.add(key);
+            n.classList.remove('penta-clickable','penta-hint-note');
+            n.classList.add('penta-found');
+            if(target.degree === '1') n.classList.add('penta-root');
+            n.innerText = target.degree;
+            n.title = `${s}번 줄 · ${f}프렛 · ${pentaDisplayNote(target.note)} · ${target.degree}도`;
+            setPentaFeedback(`정답 · ${s}번 줄 ${f}프렛 · ${pentaDisplayNote(target.note)} (${pentaDegreeLabel(target.degree)})`, 'correct');
+            advancePentaQuiz();
+        } else {
+            const actual = n.dataset.n2 || n.dataset.n1;
+            n.classList.add('wrong');
+            n.innerText = actual;
+            if(pentaPractice === 'GUIDED') {
+                const wanted = currentPentaGuidedTarget();
+                setPentaFeedback(`현재는 ${wanted?.s || pentaString}번 줄에서 ${wanted ? pentaDegreeLabel(wanted.degree) : '다음 음'} ${wanted ? pentaDisplayNote(wanted.note) : ''}을(를) 찾는 단계입니다. 이 위치는 ${actual}입니다.`, 'wrong');
+            } else {
+                setPentaFeedback(`아님 · ${s}번 줄 ${f}프렛은 ${actual}입니다.`, 'wrong');
+            }
+            setTimeout(() => { n.classList.remove('wrong'); n.innerText = ''; }, 550);
+        }
+    }
+
+    function advancePentaQuiz() {
+        if(remainingPentaTargets().length > 0) {
+            if(pentaHintVisible) applyPentaHint();
+            updatePentaStatus();
+            updatePentaProgress();
+            return;
+        }
+        if(pentaPractice === 'GUIDED') {
+            const sequence = pentaGuidedSequence();
+            const finished = sequence[pentaGuidedIndex];
+            if(pentaGuidedIndex < sequence.length - 1) {
+                pentaGuidedIndex++;
+                const next = sequence[pentaGuidedIndex];
+                pentaString = next.s;
+                pentaStringIndex = Math.max(0, pentaStringOrder.indexOf(pentaString));
+                resetPentaHint();
+                renderPentaFoundNodes();
+                updatePentaStatus();
+                updatePentaProgress();
+                updatePentaControls();
+                updateUI();
+                const moved = finished?.s !== next.s ? `${finished.s}번 줄 완료 · ` : '';
+                setPentaFeedback(`${moved}다음은 ${next.s}번 줄 ${pentaDegreeLabel(next.degree)} ${pentaDisplayNote(next.note)}입니다.`, 'correct');
+                return;
+            }
+        } else if(isPentaLineMode() && pentaStringIndex < pentaStringOrder.length - 1) {
+            pentaStringIndex++;
+            pentaString = pentaStringOrder[pentaStringIndex];
+            renderPentaFoundNodes();
+            updatePentaStatus();
+            updatePentaProgress();
+            updateUI();
+            return;
+        }
+        pentaComplete = true;
+        resetPentaHint();
+        renderPentaFoundNodes();
+        document.getElementById('target-desc').innerText = '완료 · 6번 줄부터 1번 줄까지 완성한 모양을 확인하세요';
+        document.getElementById('status').innerText = '자동으로 초기화하지 않습니다. [완료 · 다시하기]를 눌러 반복하세요.';
+        setPentaFeedback(`완료! ${pentaDisplayNote(pentaRoot)} ${pentaQuality === 'MAJOR' ? '메이저' : '마이너'} 펜타토닉 P${pentaPosition}`, 'correct');
+        updatePentaControls();
+        updatePentaProgress();
+        updateUI();
+    }
+
+    function updatePentaStatus() {
+        const remaining = remainingPentaTargets().length;
+        if(pentaPractice === 'GUIDED') {
+            const target = currentPentaGuidedTarget();
+            if(!target) return;
+            const lineFound = pentaFoundCountOnString(target.s);
+            const lineTotal = pentaTargets.filter(t => t.s === target.s).length;
+            document.getElementById('target-desc').innerText = `${target.s}번 줄에서 ${pentaDegreeLabel(target.degree)}를 찾으세요`;
+            document.getElementById('status').innerText = `찾을 음: ${pentaDisplayNote(target.note)} · ${pentaGuidedIndex + 1}/12 · 현재 줄 ${lineFound}/${lineTotal}${pentaHintVisible ? ' · 힌트 표시 중' : ' · 모르면 힌트 표시'}`;
+        } else if(pentaPractice === 'STRING' || pentaPractice === 'RANDOM_STRING') {
+            const orderText = pentaPractice === 'RANDOM_STRING' ? `랜덤 ${pentaStringIndex + 1}/6` : `${pentaStringIndex + 1}/6`;
+            document.getElementById('target-desc').innerText = `${pentaString}번 줄에서 두 음을 찾으세요`;
+            document.getElementById('status').innerText = `${orderText} · ${pentaString}번 줄 · 남은 ${remaining}`;
+        } else {
+            document.getElementById('target-desc').innerText = `포지션 ${pentaPosition}의 12개 위치를 모두 찾으세요`;
+            document.getElementById('status').innerText = `전체 테스트 · ${pentaFoundKeys.size}/12 · 남은 ${remaining}`;
         }
     }
 
